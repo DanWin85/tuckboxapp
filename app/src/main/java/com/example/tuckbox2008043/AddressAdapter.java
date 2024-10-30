@@ -1,6 +1,7 @@
 package com.example.tuckbox2008043;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import java.util.List;
 
 public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressViewHolder> {
     private List<DeliveryAddress> addresses = new ArrayList<>();
+    private static final String TAG = "AddressAdapter";
     private Context context;
     private AddressClickListener listener;
 
@@ -60,8 +62,9 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
         return addresses.size();
     }
 
-    public void setAddresses(List<DeliveryAddress> addresses) {
-        this.addresses = addresses;
+    public void setAddresses(List<DeliveryAddress> newAddresses) {
+        Log.d(TAG, "Setting new addresses. Count: " + newAddresses.size());
+        this.addresses = newAddresses;
         notifyDataSetChanged();
     }
 

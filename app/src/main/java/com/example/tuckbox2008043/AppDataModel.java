@@ -1,6 +1,7 @@
 package com.example.tuckbox2008043;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
@@ -75,7 +76,7 @@ public class AppDataModel {
         return inserted;
     }
 
-    public List<DeliveryAddress> getAddressesForUser(String userId) {
+    public LiveData<List<DeliveryAddress>> getAddressesForUser(long userId) {
         return deliveryAddressDao.getAddressesForUser(userId);
     }
     public int deleteDeliveryAddress(DeliveryAddress address) {
@@ -84,5 +85,16 @@ public class AppDataModel {
             remoteDBHandler.deleteDeliveryAddress(address);
         }
         return deleted;
+    }
+    public void syncAddressesForUser(long userId) {
+        remoteDBHandler.syncAddressesForUser(userId);
+    }
+
+    public void debugAddresses(long userId) {
+        List<DeliveryAddress> directAddresses = deliveryAddressDao.getAddressesForUserDirect(userId);
+        Log.d("AppDataModel", "Direct query found " + directAddresses.size() + " addresses for user " + userId);
+        for (DeliveryAddress address : directAddresses) {
+            Log.d("AppDataModel", "Address: " + address.getAddress() + " UserID: " + address.getUserId());
+        }
     }
 }

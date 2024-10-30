@@ -46,9 +46,8 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
             finish();
         });
         tvAddNewDeliveryAddress.setOnClickListener(view -> {
-            // In the previous activity where you start AddressManagementActivity
             Intent intent = new Intent(this, AddressManagementActivity.class);
-            intent.putExtra("USER_ID", userId); // Make sure userId is a long value here
+            intent.putExtra("USER_ID", userId);
             startActivity(intent);
         });
     }

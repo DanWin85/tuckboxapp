@@ -44,10 +44,14 @@ public class AppViewModel extends AndroidViewModel {
         return dataModel.insertDeliveryAddress(address);
     }
 
-    public List<DeliveryAddress> getAddressesForUser(String userId) {
+    public LiveData<List<DeliveryAddress>> getAddressesForUser(long userId) {
         return dataModel.getAddressesForUser(userId);
     }
     public int deleteDeliveryAddress(DeliveryAddress address) {
         return dataModel.deleteDeliveryAddress(address);
     }
+    public void syncAddressesForUser(long userId) {
+        dataModel.syncAddressesForUser(userId);
+    }
+
 }

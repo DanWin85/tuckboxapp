@@ -1,5 +1,6 @@
 package com.example.tuckbox2008043.DataModel;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -13,7 +14,10 @@ public interface DeliveryAddressDao {
     long insertAddress(DeliveryAddress address);
 
     @Query("SELECT * FROM delivery_addresses WHERE User_ID = :userId")
-    List<DeliveryAddress> getAddressesForUser(String userId);
+    LiveData<List<DeliveryAddress>> getAddressesForUser(long userId);
+
+    @Query("SELECT * FROM delivery_addresses WHERE User_ID = :userId")
+    List<DeliveryAddress> getAddressesForUserDirect(long userId);
 
     @Update
     int updateAddress(DeliveryAddress address);

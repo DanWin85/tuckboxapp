@@ -1,9 +1,12 @@
 package com.example.tuckbox2008043;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.tuckbox2008043.DataModel.DeliveryAddress;
@@ -20,6 +23,8 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
     private TextInputEditText etNewAddress;
     private TextInputLayout tilNewAddress;
     private long userId;
+    private LiveData<List<DeliveryAddress>> addressesLiveData;
+    private static final String TAG = "AddressManagement";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,19 +39,29 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
             return;
             //isHome = false;
         }
-
-
-
         viewModel = new AppViewModel(getApplication());
+        viewModel.syncAddressesForUser(userId);
+        viewModel = new ViewModelProvider(this).get(AppViewModel.class);
+       // viewModel.debugAddresses(userId);
 
-        // Initialize views
+        initializeViews();
+        setupRecyclerView();
+        observeAddresses();
+    }
+    private void initializeViews() {
         recyclerView = findViewById(R.id.rvAddresses);
         etNewAddress = findViewById(R.id.etNewAddress);
         tilNewAddress = findViewById(R.id.tilNewAddress);
         FloatingActionButton fabAddAddress = findViewById(R.id.fabAddAddress);
 
-        // Setup RecyclerView
+        fabAddAddress.setOnClickListener(v -> addNewAddress());
+    }
+
+
+    private void setupRecyclerView() {
+        recyclerView = findViewById(R.id.rvAddresses);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         addressAdapter = new AddressAdapter(this, new AddressAdapter.AddressClickListener() {
             @Override
             public void onDeleteClick(DeliveryAddress address) {
@@ -55,27 +70,31 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
 
             @Override
             public void onEditClick(DeliveryAddress address) {
-                // Implement edit functionality if needed
+                // TODO: Implement edit
             }
         });
+
         recyclerView.setAdapter(addressAdapter);
+        Log.d(TAG, "RecyclerView setup completed");
+    }
+    private void observeAddresses() {
+        Log.d(TAG, "Starting address observation for userId: " + userId);
 
-        // Load addresses
-        loadAddresses();
-
-        // Setup add button
-        fabAddAddress.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addNewAddress();
+        viewModel.getAddressesForUser(userId).observe(this, addresses -> {
+            Log.d(TAG, "Address list updated. Count: " + (addresses != null ? addresses.size() : 0));
+            if (addresses != null) {
+                for (DeliveryAddress address : addresses) {
+                    Log.d(TAG, "Address: " + address.getAddress() + " for user: " + address.getUserId());
+                }
+                addressAdapter.setAddresses(addresses);
+            } else {
+                Log.d(TAG, "Received null address list");
             }
         });
-    }
-
-    private void loadAddresses() {
-        // Convert long userId to String
-        List<DeliveryAddress> addresses = viewModel.getAddressesForUser(String.valueOf(userId));
-        addressAdapter.setAddresses(addresses);
+        Log.d(TAG, "Starting observation for user: " + userId);
+        viewModel.getAddressesForUser(userId).observe(this, addresses -> {
+            Log.d(TAG, "Received " + (addresses != null ? addresses.size() : 0) + " addresses");
+        });
     }
 
     private void addNewAddress() {
@@ -86,15 +105,15 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
         }
 
         DeliveryAddress newAddress = new DeliveryAddress(
-                UUID.randomUUID().toString(),  // Assuming you still want a UUID string for the address ID
+                UUID.randomUUID().toString(),
                 address,
-                (userId)  // Convert long to String here as well
+                userId
         );
 
         if (viewModel.insertDeliveryAddress(newAddress) != -1) {
             etNewAddress.setText("");
             tilNewAddress.setError(null);
-            loadAddresses(); // Refresh the list
+            // No need to manually refresh - LiveData will handle it
             Toast.makeText(this, "Address added successfully", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Failed to add address", Toast.LENGTH_SHORT).show();
@@ -103,10 +122,12 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
 
     private void deleteAddress(DeliveryAddress address) {
         if (viewModel.deleteDeliveryAddress(address) > 0) {
-            loadAddresses(); // Refresh the list
+            // No need to manually refresh - LiveData will handle it
             Toast.makeText(this, "Address deleted", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Failed to delete address", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 }

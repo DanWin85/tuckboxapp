@@ -9,14 +9,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="center_horizontal"
         android:padding="16dp">
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilNewAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="150dp"
+            android:layout_marginBottom="16dp"
             android:hint="New Address">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -33,7 +32,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginTop="16dp" />
+            android:clipToPadding="false"
+            android:paddingBottom="80dp"/>
 
     </LinearLayout>
 
@@ -42,8 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="100dp"
-        android:layout_marginEnd="16dp"
+        android:layout_margin="16dp"
         android:contentDescription="Add Address"
         android:src="@drawable/ic_add" />
 

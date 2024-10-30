@@ -21,7 +21,7 @@
         <activity
             android:name=".UserInformationActivity"
             android:exported="false"
-            android:theme="@style/Theme.Material3.DynamicColors.Dark.NoActionBar" />
+            />
         <activity
             android:name=".ServicesActivity"
             android:exported="false" />
