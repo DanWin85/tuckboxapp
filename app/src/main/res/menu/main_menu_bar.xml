@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/app_bar_home"
+        android:title="Home"
+        android:icon="@drawable/baseline_home"
+        app:showAsAction="always"
+        />
+    <item
+        android:id="@+id/app_bar_place_order"
+        android:title="@string/Place_an_Order"
+        android:icon="@drawable/baseline_airport_shuttle"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/app_bar_user_info"
+        android:title="@string/user_info"
+        android:icon="@drawable/baseline_edit"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/app_bar_sign_out"
+        android:title="@string/sign_out"
+        android:icon="@drawable/baseline_signout"
+        app:showAsAction="ifRoom"
+        />
+    <item
+        android:id="@+id/app_bar_current_order"
+        android:title="@string/current_order"
+        android:icon="@drawable/baseline_fastfood"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/app_bar_order_history"
+        android:title="@string/Order_History"
+        android:icon="@drawable/baseline_history"
+        app:showAsAction="ifRoom"
+        />
+
+</menu>

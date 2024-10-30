@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "761305228887",
+    "project_id": "tuck-box-database-71542",
+    "storage_bucket": "tuck-box-database-71542.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761305228887:android:20b3bedd8f073a38036512",
+        "android_client_info": {
+          "package_name": "com.example.tuckbox2008043"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb96DK5VsMJZdTM6EAq2NSWb82uduYHMs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
