@@ -30,23 +30,21 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_address_management);
-
         // Get userId from intent
         userId = getIntent().getLongExtra("USER_ID", -1);
         if (userId == -1) {
             Toast.makeText(this, "Error: User ID not found", Toast.LENGTH_SHORT).show();
             finish();
             return;
-            //isHome = false;
         }
         viewModel = new AppViewModel(getApplication());
         viewModel.syncAddressesForUser(userId);
         viewModel = new ViewModelProvider(this).get(AppViewModel.class);
        // viewModel.debugAddresses(userId);
-
         initializeViews();
         setupRecyclerView();
         observeAddresses();
+        isHome = false;
     }
     private void initializeViews() {
         recyclerView = findViewById(R.id.rvAddresses);
@@ -128,6 +126,10 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
             Toast.makeText(this, "Failed to delete address", Toast.LENGTH_SHORT).show();
         }
     }
-
+    @Override
+    protected void onStart() {
+        super.onStart();
+        isHome = true;
+    }
 
 }

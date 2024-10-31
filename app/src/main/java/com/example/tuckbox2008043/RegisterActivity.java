@@ -132,13 +132,12 @@ public class RegisterActivity extends AppCompatActivity {
 
         long userId = viewModel.getNextUserID();
 
-        // Create and insert user
+
         User user = new User(userId, email, password, firstName, lastName, mobile);
         if(viewModel.insertUser(user) != -1) {
-            // Generate a unique address ID
+
             String addressId = UUID.randomUUID().toString();
 
-            // Create and insert delivery address
             DeliveryAddress deliveryAddress = new DeliveryAddress(addressId, address, userId);
             if(viewModel.insertDeliveryAddress(deliveryAddress) != -1) {
                 Toast.makeText(this, "Registration successful for " + firstName + "" + lastName, Toast.LENGTH_SHORT).show();

@@ -60,7 +60,6 @@ public class RemoteDBHandler {
                 });
     }
 
-    // New method to sync addresses from Firestore to Room
     public void syncAddressesForUser(long userId) {
         cloudDB.collection(ADDRESS_DATA_COLLECTION)
                 .whereEqualTo(ConstantsNames.ADDRESS_USER_ID, userId)
@@ -82,7 +81,7 @@ public class RemoteDBHandler {
                 });
     }
 
-    // New method to update address
+
     public void updateDeliveryAddress(DeliveryAddress address) {
         cloudDB.collection(ADDRESS_DATA_COLLECTION)
                 .document(address.getAddressId())

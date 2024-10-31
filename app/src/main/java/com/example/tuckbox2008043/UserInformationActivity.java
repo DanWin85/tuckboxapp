@@ -37,7 +37,7 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
         tvCancel = findViewById(R.id.tvCancel);
         tvAddNewDeliveryAddress = findViewById(R.id.tvAddNewDeliveryAddress);
         MaterialButton btnUpdate = findViewById(R.id.btnUpdate);
-
+        isHome= false;
         setupListeners();
 
     }
@@ -50,5 +50,11 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
             intent.putExtra("USER_ID", userId);
             startActivity(intent);
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        isHome = true;
     }
 }
