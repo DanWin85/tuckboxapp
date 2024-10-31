@@ -21,7 +21,6 @@ public class City {
         this.cityName = cityName;
     }
 
-    // Getters and Setters
     @NonNull
     public String getCityId() { return cityId; }
     public void setCityId(@NonNull String cityId) { this.cityId = cityId; }
