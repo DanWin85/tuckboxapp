@@ -19,6 +19,7 @@ import com.google.android.material.button.MaterialButton;
 public class ServicesActivity extends MainMenuBarBaseActivity {
     AppViewModel viewModel = null;
     private MaterialButton btnPlaceOrder, btnUpdateUserDetails, btnCurrentOrder, btnOrderHistory;
+    private String userEmail; // Add class-level variable to store userEmail
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +30,7 @@ public class ServicesActivity extends MainMenuBarBaseActivity {
         TextView welcomeTextView = findViewById(R.id.userMainWelcomeTextView);
 
         SharedPreferences preferences = getSharedPreferences(AppViewModel.USER_PREF_DATA, MODE_PRIVATE);
-        String userEmail = preferences.getString(AppViewModel.USER_PREF_USER_EMAIL, null);
+        userEmail = preferences.getString(AppViewModel.USER_PREF_USER_EMAIL, null); // Store userEmail in class variable
 
         if (userEmail != null) {
             User user = viewModel.getUserByEmail(userEmail);
@@ -38,30 +39,39 @@ public class ServicesActivity extends MainMenuBarBaseActivity {
             }
         } else {
             Toast.makeText(this, "No user data found", Toast.LENGTH_SHORT).show();
-            finish();  // Close activity if user data is missing
+            finish();
         }
         isHome = true;
         initViews();
         setupListeners();
     }
+
     @Override
     protected void onStart() {
         super.onStart();
         isHome = true;
     }
 
-    private void initViews(){
+    private void initViews() {
         btnPlaceOrder = findViewById(R.id.btnPlaceOrder);
         btnUpdateUserDetails = findViewById(R.id.btnUpdateUserDetails);
         btnCurrentOrder = findViewById(R.id.btnCurrentOrder);
         btnOrderHistory = findViewById(R.id.btnOrderHistory);
     }
-    private void setupListeners(){
+
+    private void setupListeners() {
         btnPlaceOrder.setOnClickListener(view -> {
             startActivity(new Intent(ServicesActivity.this, PlaceOrderActivity.class));
-                });
+        });
+
         btnUpdateUserDetails.setOnClickListener(view -> {
-            startActivity(new Intent(ServicesActivity.this, UserInformationActivity.class));
+            if (userEmail != null) { // Add null check for safety
+                Intent intent = new Intent(this, UserInformationActivity.class);
+                intent.putExtra("USER_EMAIL", userEmail);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "User email not found", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 }

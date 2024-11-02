@@ -6,7 +6,11 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.tuckbox2008043.DataModel.City;
 import com.example.tuckbox2008043.DataModel.DeliveryAddress;
+import com.example.tuckbox2008043.DataModel.Food;
+import com.example.tuckbox2008043.DataModel.FoodExtraDetails;
+import com.example.tuckbox2008043.DataModel.TimeSlot;
 import com.example.tuckbox2008043.DataModel.User;
 
 import java.util.List;
@@ -53,5 +57,13 @@ public class AppViewModel extends AndroidViewModel {
     public void syncAddressesForUser(long userId) {
         dataModel.syncAddressesForUser(userId);
     }
+
+    public int updateUser(User user) {
+        return dataModel.updateUser(user);
+    }
+    public List<Food> getAllFoods(){return dataModel.getAllFoods();}
+    public List<FoodExtraDetails> getAllFoodExtras(){return dataModel.getAllFoodExtras();}
+    public List<City> getAllCities(){return dataModel.getAllCities();}
+    public List<TimeSlot>getAllTimeSlots(){return dataModel.getAllTimeSlots();}
 
 }

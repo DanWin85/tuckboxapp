@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
 @Database(
-            entities = {User.class, DeliveryAddress.class},
+            entities = {User.class, DeliveryAddress.class, Food.class, FoodExtraDetails.class, City.class, TimeSlot.class},
             version = 1,
             exportSchema = false
 )
@@ -19,6 +19,11 @@ public abstract class AppDatabase extends RoomDatabase {
     private static AppDatabase instance = null;
     public abstract UserDao getUserDao();
     public abstract DeliveryAddressDao getDeliveryAddressDao();
+    public abstract FoodDao getFoodDao();
+    public abstract FoodExtraDetailsDao getFoodExtraDao();
+    public abstract CityDao getCityDao();
+    public abstract TimeSlotDao getTimeSlotDao();
+
 
     public static AppDatabase createDatabaseInstance(Context context){
         if(instance == null){

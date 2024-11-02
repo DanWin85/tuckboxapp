@@ -1,6 +1,5 @@
 package com.example.tuckbox2008043.DataModel;
 
-import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
@@ -18,10 +17,9 @@ import java.io.Serializable;
         )
 )
 public class DeliveryAddress implements Serializable {
-    @PrimaryKey
-    @NonNull
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "Address_ID")
-    private String addressId;
+    private long addressId;
 
     @ColumnInfo(name = "Address")
     private String address;
@@ -30,16 +28,14 @@ public class DeliveryAddress implements Serializable {
     private long userId;
 
     // Constructors
-    public DeliveryAddress(@NonNull String addressId, String address, long userId) {
-        this.addressId = addressId;
+    public DeliveryAddress(String address, long userId) {
         this.address = address;
         this.userId = userId;
     }
 
     // Getters and Setters
-    @NonNull
-    public String getAddressId() { return addressId; }
-    public void setAddressId(@NonNull String addressId) { this.addressId = addressId; }
+    public long getAddressId() { return addressId; }
+    public void setAddressId(long addressId) { this.addressId = addressId; }
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }

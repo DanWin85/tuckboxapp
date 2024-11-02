@@ -1,5 +1,7 @@
 package com.example.tuckbox2008043;
 
+import static android.content.ContentValues.TAG;
+
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.example.tuckbox2008043.DataModel.ConstantsNames;
@@ -12,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class RemoteDBHandler {
     private AppDataModel dataModel = null;
@@ -37,26 +40,43 @@ public class RemoteDBHandler {
     }
 
     public void insertDeliveryAddress(DeliveryAddress address) {
+        // Generate a unique document ID using UUID
+        String documentId = UUID.randomUUID().toString();
+
+        // Add the document ID to the address map
+        Map<String, Object> addressMap = getAddressMap(address);
+        addressMap.put("firestore_id", documentId);
+
         cloudDB.collection(ADDRESS_DATA_COLLECTION)
-                .document(address.getAddressId())
-                .set(getAddressMap(address))
+                .document(documentId)  // Use the generated UUID as document ID
+                .set(addressMap)
                 .addOnSuccessListener(unused -> {
-                    Log.d("ADDRESS_INSERT", "Address " + address.getAddressId() + " is inserted in cloud DB");
+                    Log.d(TAG, "Address " + documentId + " is inserted in cloud DB");
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("ADDRESS_INSERT", "Address " + address.getAddressId() + " is not inserted in cloud DB", e);
+                    Log.e(TAG, "Address " + documentId + " is not inserted in cloud DB", e);
                 });
     }
 
     public void deleteDeliveryAddress(DeliveryAddress address) {
+        // Query to find the document with matching address and userId
         cloudDB.collection(ADDRESS_DATA_COLLECTION)
-                .document(address.getAddressId())
-                .delete()
-                .addOnSuccessListener(unused -> {
-                    Log.d("ADDRESS_DELETE", "Address " + address.getAddressId() + " is deleted from cloud DB");
+                .whereEqualTo(ConstantsNames.ADDRESS, address.getAddress())
+                .whereEqualTo(ConstantsNames.ADDRESS_USER_ID, address.getUserId())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        document.getReference().delete()
+                                .addOnSuccessListener(unused -> {
+                                    Log.d(TAG, "Address deleted from cloud DB: " + document.getId());
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Failed to delete address: " + document.getId(), e);
+                                });
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("ADDRESS_DELETE", "Failed to delete address " + address.getAddressId(), e);
+                    Log.e(TAG, "Failed to query address for deletion", e);
                 });
     }
 
@@ -65,32 +85,70 @@ public class RemoteDBHandler {
                 .whereEqualTo(ConstantsNames.ADDRESS_USER_ID, userId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    Log.d(TAG, "Found " + queryDocumentSnapshots.size() + " addresses for user " + userId);
+
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
-                        DeliveryAddress address = new DeliveryAddress(
-                                document.getString(ConstantsNames.ADDRESS_ID),
-                                document.getString(ConstantsNames.ADDRESS),
-                                document.getLong(ConstantsNames.ADDRESS_USER_ID)
-                        );
-                        // Insert into Room DB - this will trigger LiveData update
-                        dataModel.insertDeliveryAddress(address);
+                        try {
+                            String address = document.getString(ConstantsNames.ADDRESS);
+                            Long userIdFromDoc = document.getLong(ConstantsNames.ADDRESS_USER_ID);
+
+                            if (address != null && userIdFromDoc != null) {
+                                // Create new address object
+                                DeliveryAddress deliveryAddress = new DeliveryAddress(
+                                        address,
+                                        userIdFromDoc
+                                );
+
+                                // Insert into local database
+                                long result = dataModel.insertDeliveryAddress(deliveryAddress);
+                                if (result == -1) {
+                                    Log.e(TAG, "Failed to insert synced address into local DB");
+                                } else {
+                                    Log.d(TAG, "Successfully synced address: " + address);
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error processing synced address", e);
+                        }
                     }
-                    Log.d("ADDRESS_SYNC", "Addresses synced for user " + userId);
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("ADDRESS_SYNC", "Failed to sync addresses for user " + userId, e);
+                    Log.e(TAG, "Failed to sync addresses for user " + userId, e);
                 });
     }
 
 
     public void updateDeliveryAddress(DeliveryAddress address) {
+        // Query to find the document with matching address and userId
         cloudDB.collection(ADDRESS_DATA_COLLECTION)
-                .document(address.getAddressId())
-                .update(getAddressMap(address))
-                .addOnSuccessListener(unused -> {
-                    Log.d("ADDRESS_UPDATE", "Address " + address.getAddressId() + " is updated in cloud DB");
+                .whereEqualTo(ConstantsNames.ADDRESS, address.getAddress())
+                .whereEqualTo(ConstantsNames.ADDRESS_USER_ID, address.getUserId())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        document.getReference().update(getAddressMap(address))
+                                .addOnSuccessListener(unused -> {
+                                    Log.d(TAG, "Address updated in cloud DB: " + document.getId());
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Failed to update address: " + document.getId(), e);
+                                });
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("ADDRESS_UPDATE", "Failed to update address " + address.getAddressId(), e);
+                    Log.e(TAG, "Failed to query address for update", e);
+                });
+    }
+
+    public void updateUser(User user) {
+        cloudDB.collection(USER_DATA_COLLECTION)
+                .document(user.getUserEmail())
+                .set(getUserMap(user))
+                .addOnSuccessListener(unused -> {
+                    Log.d("USER_UPDATE", "User " + user.getUserEmail() + " is updated in cloud DB");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("USER_UPDATE", "Failed to update user " + user.getUserEmail(), e);
                 });
     }
 
@@ -107,7 +165,6 @@ public class RemoteDBHandler {
 
     private Map<String, Object> getAddressMap(DeliveryAddress address) {
         Map<String, Object> map = new HashMap<>();
-        map.put(ConstantsNames.ADDRESS_ID, address.getAddressId());
         map.put(ConstantsNames.ADDRESS, address.getAddress());
         map.put(ConstantsNames.ADDRESS_USER_ID, address.getUserId());
         return map;

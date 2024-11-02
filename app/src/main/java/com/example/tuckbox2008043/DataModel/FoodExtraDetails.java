@@ -17,33 +17,29 @@ import androidx.room.PrimaryKey;
 )
 public class FoodExtraDetails {
     @PrimaryKey
-    @NonNull
     @ColumnInfo(name = "Food_Details_ID")
-    private String foodDetailsId;
+    private long foodDetailsId;
 
     @ColumnInfo(name = "Details_Name")
     private String detailsName;
 
-    @NonNull
     @ColumnInfo(name = "Food_ID")
-    private String foodId;
+    private long foodId;
 
     // Constructors
-    public FoodExtraDetails(@NonNull String foodDetailsId, String detailsName, @NonNull String foodId) {
+    public FoodExtraDetails(@NonNull long foodDetailsId, String detailsName, long foodId) {
         this.foodDetailsId = foodDetailsId;
         this.detailsName = detailsName;
         this.foodId = foodId;
     }
 
     // Getters and Setters
-    @NonNull
-    public String getFoodDetailsId() { return foodDetailsId; }
-    public void setFoodDetailsId(@NonNull String foodDetailsId) { this.foodDetailsId = foodDetailsId; }
+    public long getFoodDetailsId() { return foodDetailsId; }
+    public void setFoodDetailsId(long foodDetailsId) { this.foodDetailsId = foodDetailsId; }
 
     public String getDetailsName() { return detailsName; }
     public void setDetailsName(String detailsName) { this.detailsName = detailsName; }
 
-    @NonNull
-    public String getFoodId() { return foodId; }
-    public void setFoodId(@NonNull String foodId) { this.foodId = foodId; }
+    public long getFoodId() { return foodId; }
+    public void setFoodId(long foodId) { this.foodId = foodId; }
 }

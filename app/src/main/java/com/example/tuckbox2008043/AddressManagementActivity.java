@@ -102,21 +102,24 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
             return;
         }
 
-        DeliveryAddress newAddress = new DeliveryAddress(
-                UUID.randomUUID().toString(),
-                address,
-                userId
-        );
+        DeliveryAddress newAddress = new DeliveryAddress(address, userId);
 
-        if (viewModel.insertDeliveryAddress(newAddress) != -1) {
-            etNewAddress.setText("");
-            tilNewAddress.setError(null);
-            // No need to manually refresh - LiveData will handle it
-            Toast.makeText(this, "Address added successfully", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Failed to add address", Toast.LENGTH_SHORT).show();
+        try {
+            long result = viewModel.insertDeliveryAddress(newAddress);
+            if (result != -1) {
+                etNewAddress.setText("");
+                tilNewAddress.setError(null);
+                Toast.makeText(this, "Address added successfully", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Failed to add address", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error adding address", e);
+            Toast.makeText(this, "Error adding address: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
+
+
 
     private void deleteAddress(DeliveryAddress address) {
         if (viewModel.deleteDeliveryAddress(address) > 0) {
@@ -126,10 +129,6 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
             Toast.makeText(this, "Failed to delete address", Toast.LENGTH_SHORT).show();
         }
     }
-    @Override
-    protected void onStart() {
-        super.onStart();
-        isHome = true;
-    }
+
 
 }

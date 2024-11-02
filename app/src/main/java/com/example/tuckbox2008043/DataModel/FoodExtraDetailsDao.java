@@ -10,11 +10,14 @@ import java.util.List;
 
 @Dao
 public interface FoodExtraDetailsDao {
+    @Query("SELECT * FROM food_extra_details")
+    List<FoodExtraDetails> getAllFoodExtras();
+
     @Query("SELECT * FROM food_extra_details WHERE Food_ID = :foodId")
-    List<FoodExtraDetails> getExtraDetailsByFoodId(String foodId);
+    List<FoodExtraDetails> getExtraDetailsByFoodId(long foodId);
 
     @Query("SELECT * FROM food_extra_details WHERE Food_Details_ID = :detailsId")
-    FoodExtraDetails getFoodExtraDetailsById(String detailsId);
+    FoodExtraDetails getFoodExtraDetailsById(long detailsId);
 
     @Insert
     void insert(FoodExtraDetails foodExtraDetails);
