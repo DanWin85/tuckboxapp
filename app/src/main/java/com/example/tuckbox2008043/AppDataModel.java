@@ -1,6 +1,7 @@
 package com.example.tuckbox2008043;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
@@ -19,6 +20,7 @@ import com.example.tuckbox2008043.DataModel.User;
 import com.example.tuckbox2008043.DataModel.UserDao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class AppDataModel {
@@ -115,163 +117,91 @@ public class AppDataModel {
         return updated;
     }
 
-    private void initializeFoodData(){
-        if(foodDao.getAllFoods().size() == 0){
+    private void initializeFoodData() {
+        if (foodDao.getAllFoods().isEmpty()) {
+            Log.d("AppDataModel", "Initializing food data");
             List<Food> foods = new ArrayList<>();
-            foods.add(new Food(
-                    0,
-                    "Green Salad Lunch",
-                    true
-            ));
-            foods.add(new Food(
-                    1,
-                    "Green Salad Lunch",
-                    false
-            ));
-            foods.add(new Food(
-                    2,
-                    "Lamb Korma",
-                    true
-            ));
-            foods.add(new Food(
-                    3,
-                    "Lamb Korma",
-                    false
-            ));
-            foods.add(new Food(
-                    4,
-                    "Open Chicken Sandwich",
-                    true
-            ));
-            foods.add(new Food(
-                    5,
-                    "Open Chicken Sandwich",
-                    false
-            ));
-            foods.add(new Food(
-                    6,
-                    "Beef Noodle Salad",
-                    true
-            ));
-            foods.add(new Food(
-                    7,
-                    "Beef Noodle Salad",
-                    false
-            ));
+            foods.add(new Food(0, "Green Salad Lunch", true));
+            foods.add(new Food(1, "Green Salad Lunch", false));
+            foods.add(new Food(2, "Lamb Korma", true));
+            foods.add(new Food(3, "Lamb Korma", false));
+            foods.add(new Food(4, "Open Chicken Sandwich", true));
+            foods.add(new Food(5, "Open Chicken Sandwich", false));
+            foods.add(new Food(6, "Beef Noodle Salad", true));
+            foods.add(new Food(7, "Beef Noodle Salad", false));
+
+            // Insert foods into database
+            for (Food food : foods) {
+                foodDao.insertFood(food);
+            }
+            Log.d("AppDataModel", "Food data initialized");
         }
     }
-    private void initializeFoodExtraData(){
-        if(foodExtraDetailsDao.getAllFoodExtras().size() == 0){
+    private void initializeFoodExtraData() {
+        if (foodExtraDetailsDao.getAllFoodExtras().isEmpty()) {
+            Log.d("AppDataModel", "Initializing food extra details data");
             List<FoodExtraDetails> foodExtraDetails = new ArrayList<>();
-            foodExtraDetails.add(new FoodExtraDetails(
-                    1,
-                    "None",
-                    0
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    2,
-                    "Ranch",
-                    0
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    3,
-                    "Vinaigrette",
-                    0
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    4,
-                    "Mild",
-                    2
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    5,
-                    "Med",
-                    2
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    6,
-                    "Hot",
-                    2
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    7,
-                    "White",
-                    4
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    8,
-                    "Rye",
-                    4
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    9,
-                    "Wholemeal",
-                    4
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    10,
-                    "No Chilli Flakes",
-                    6
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    11,
-                    "Regular Chilli Flakes",
-                    6
-            ));
-            foodExtraDetails.add(new FoodExtraDetails(
-                    12,
-                    "Extra Chilli Flakes",
-                    6
-            ));
+            foodExtraDetails.add(new FoodExtraDetails(1, "None", 0));
+            foodExtraDetails.add(new FoodExtraDetails(2, "Ranch", 0));
+            foodExtraDetails.add(new FoodExtraDetails(3, "Vinaigrette", 0));
+            foodExtraDetails.add(new FoodExtraDetails(4, "Mild", 2));
+            foodExtraDetails.add(new FoodExtraDetails(5, "Med", 2));
+            foodExtraDetails.add(new FoodExtraDetails(6, "Hot", 2));
+            foodExtraDetails.add(new FoodExtraDetails(7, "White", 4));
+            foodExtraDetails.add(new FoodExtraDetails(8, "Rye", 4));
+            foodExtraDetails.add(new FoodExtraDetails(9, "Wholemeal", 4));
+            foodExtraDetails.add(new FoodExtraDetails(10, "No Chilli Flakes", 6));
+            foodExtraDetails.add(new FoodExtraDetails(11, "Regular Chilli Flakes", 6));
+            foodExtraDetails.add(new FoodExtraDetails(12, "Extra Chilli Flakes", 6));
 
+            // Insert food extras into database
+            for (FoodExtraDetails extra : foodExtraDetails) {
+                foodExtraDetailsDao.insertFoodExtra(extra);
+            }
+            Log.d("AppDataModel", "Food extra details data initialized");
         }
     }
-    private void initializeCityData(){
-        if(cityDao.getAllCities().size() == 0){
-            List<City> cities = new ArrayList<>();
-            cities.add(new City(
-                    0,
-                    "Palmerston North"
-            ));
-            cities.add(new City(
-                    1,
-                    "Fielding"
-            ));
-            cities.add(new City(
-                    2,
-                    "Ashhurst"
-            ));
-            cities.add(new City(
-                    3,
-                    "Longburn"
-            ));
-        }
+    public void initializeCityData() {
+        // Check if there are already cities in the database
+        List<City> existingCities = cityDao.getAllCities();
 
+        if (existingCities.isEmpty()) {
+            // List of hard-coded cities to be inserted
+            List<City> Cities = Arrays.asList(
+                    new City(1, "Palmerston North"),
+                    new City(2, "Fielding"),
+                    new City(3, "Ashhurst"),
+                    new City(4, "Longburn")
+            );
+
+            // Insert each city into the local database
+            for (City city : Cities) {
+                cityDao.insert(city);
+            }
+        }
     }
-    private void initializeTimeSlotData(){
-        if(timeSlotDao.getAllTimeSlots().size() == 0){
+    private void initializeTimeSlotData() {
+        if (timeSlotDao.getAllTimeSlots().isEmpty()) {
+            Log.d("AppDataModel", "Initializing time slot data");
             List<TimeSlot> timeSlots = new ArrayList<>();
-            timeSlots.add(new TimeSlot(
-                    1,
-                    "11:45-12:15"
-            ));
-            timeSlots.add(new TimeSlot(
-                    2,
-                    "12:15-12:45"
-            ));
-            timeSlots.add(new TimeSlot(
-                    3,
-                    "12:45-13:15"
-            ));
-            timeSlots.add(new TimeSlot(
-                    4,
-                    "13:15-13:45"
-            ));
-        }
+            timeSlots.add(new TimeSlot(1, "11:45-12:15"));
+            timeSlots.add(new TimeSlot(2, "12:15-12:45"));
+            timeSlots.add(new TimeSlot(3, "12:45-13:15"));
+            timeSlots.add(new TimeSlot(4, "13:15-13:45"));
 
+            // Insert time slots into database
+            for (TimeSlot slot : timeSlots) {
+                timeSlotDao.insertTimeSlot(slot);
+            }
+            Log.d("AppDataModel", "Time slot data initialized");
+        }
     }
     public List<TimeSlot> getAllTimeSlots(){return timeSlotDao.getAllTimeSlots();}
     public List<Food> getAllFoods(){return foodDao.getAllFoods();}
     public List<FoodExtraDetails> getAllFoodExtras(){return  foodExtraDetailsDao.getAllFoodExtras();}
     public List<City> getAllCities(){return cityDao.getAllCities();}
+
+    public int deleteAddress(DeliveryAddress address) {
+        return deliveryAddressDao.deleteAddress(address);
+    }
 }

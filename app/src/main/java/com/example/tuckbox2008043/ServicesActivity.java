@@ -61,7 +61,18 @@ public class ServicesActivity extends MainMenuBarBaseActivity {
 
     private void setupListeners() {
         btnPlaceOrder.setOnClickListener(view -> {
-            startActivity(new Intent(ServicesActivity.this, PlaceOrderActivity.class));
+            if (userEmail != null) {
+                User user = viewModel.getUserByEmail(userEmail);
+                if (user != null) {
+                    Intent intent = new Intent(ServicesActivity.this, PlaceOrderActivity.class);
+                    intent.putExtra("USER_ID", user.getUserId());
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Please login to continue", Toast.LENGTH_SHORT).show();
+            }
         });
 
         btnUpdateUserDetails.setOnClickListener(view -> {

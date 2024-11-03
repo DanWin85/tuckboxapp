@@ -26,4 +26,6 @@ public interface TimeSlotDao {
         @Delete
         void delete(TimeSlot timeSlot);
 
+        @Insert
+        void insertTimeSlot(TimeSlot slot);
 }

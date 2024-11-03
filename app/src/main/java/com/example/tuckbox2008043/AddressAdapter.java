@@ -21,10 +21,12 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
     private static final String TAG = "AddressAdapter";
     private Context context;
     private AddressClickListener listener;
+    private long selectedAddressId = -1;
 
     public interface AddressClickListener {
         void onDeleteClick(DeliveryAddress address);
         void onEditClick(DeliveryAddress address);
+        void onAddressSelected(DeliveryAddress address);
     }
 
     public AddressAdapter(Context context, AddressClickListener listener) {
@@ -44,6 +46,9 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
         DeliveryAddress address = addresses.get(position);
         holder.tvAddress.setText(address.getAddress());
 
+        // Set the selected state
+        holder.itemView.setSelected(address.getAddressId() == selectedAddressId);
+
         holder.btnDelete.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onDeleteClick(address);
@@ -53,6 +58,14 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onEditClick(address);
+            }
+        });
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                selectedAddressId = address.getAddressId();
+                listener.onAddressSelected(address);
+                notifyDataSetChanged(); // Refresh the list to update selection state
             }
         });
     }

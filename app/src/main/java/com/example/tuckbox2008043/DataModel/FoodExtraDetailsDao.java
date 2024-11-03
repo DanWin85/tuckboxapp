@@ -27,4 +27,7 @@ public interface FoodExtraDetailsDao {
 
     @Delete
     void delete(FoodExtraDetails foodExtraDetails);
+
+    @Insert
+    void insertFoodExtra(FoodExtraDetails extra);
 }

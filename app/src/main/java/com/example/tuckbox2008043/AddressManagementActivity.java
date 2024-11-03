@@ -70,6 +70,11 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
             public void onEditClick(DeliveryAddress address) {
                 // TODO: Implement edit
             }
+
+            @Override
+            public void onAddressSelected(DeliveryAddress address) {
+
+            }
         });
 
         recyclerView.setAdapter(addressAdapter);

@@ -8,19 +8,15 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select Delivery Region"
+        android:text="Select Delivery Time"
         android:textSize="24sp"
         android:layout_marginBottom="16dp"/>
 
-    <Spinner
-        android:id="@+id/regionSpinner"
+    <RadioGroup
+        android:id="@+id/timeSlotGroup"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:background="@android:drawable/btn_dropdown"
-        android:spinnerMode="dropdown" />
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
 
     <Button
         android:id="@+id/nextButton"

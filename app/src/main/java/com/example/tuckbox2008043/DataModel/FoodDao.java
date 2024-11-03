@@ -24,4 +24,7 @@ public interface FoodDao {
 
     @Delete
     void delete(Food food);
+
+    @Insert
+    void insertFood(Food food);
 }

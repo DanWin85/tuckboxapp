@@ -13,6 +13,18 @@
         android:theme="@style/Theme.TuckBox2008043"
         tools:targetApi="31">
         <activity
+            android:name=".OrderConfirmationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TimeSlotActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MealSelectionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DeliveryAddressActivity"
+            android:exported="false" />
+        <activity
             android:name=".AddressManagementActivity"
             android:exported="false" />
         <activity
@@ -20,8 +32,7 @@
             android:exported="false" />
         <activity
             android:name=".UserInformationActivity"
-            android:exported="false"
-            />
+            android:exported="false" />
         <activity
             android:name=".ServicesActivity"
             android:exported="false" />
