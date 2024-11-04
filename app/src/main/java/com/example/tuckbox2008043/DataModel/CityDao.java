@@ -14,7 +14,7 @@ public interface CityDao {
     List<City> getAllCities();
 
     @Query("SELECT * FROM cities WHERE City_ID = :cityId")
-    City getCityById(String cityId);
+    City getCityById(long cityId);
 
     @Insert
     void insert(City city);

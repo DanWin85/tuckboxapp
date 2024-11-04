@@ -3,6 +3,7 @@ package com.example.tuckbox2008043;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +18,7 @@ import com.example.tuckbox2008043.DataModel.User;
 import com.google.android.material.button.MaterialButton;
 
 public class ServicesActivity extends MainMenuBarBaseActivity {
+    private static final String TAG = "Services Activity";
     AppViewModel viewModel = null;
     private MaterialButton btnPlaceOrder, btnUpdateUserDetails, btnCurrentOrder, btnOrderHistory;
     private String userEmail; // Add class-level variable to store userEmail
@@ -68,15 +70,57 @@ public class ServicesActivity extends MainMenuBarBaseActivity {
                     intent.putExtra("USER_ID", user.getUserId());
                     startActivity(intent);
                 } else {
-                    Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please log in again", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, LoginActivity.class));
+                    finish();
                 }
             } else {
-                Toast.makeText(this, "Please login to continue", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Please log in to continue", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, LoginActivity.class));
+                finish();
+            }
+        });
+
+        btnCurrentOrder.setOnClickListener(view -> {
+            if (userEmail != null) {
+                User user = viewModel.getUserByEmail(userEmail);
+                if (user != null) {
+                    Intent intent = new Intent(this, CurrentOrderActivity.class);
+                    intent.putExtra("USER_ID", user.getUserId());
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Please log in again", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, LoginActivity.class));
+                    finish();
+                }
+            } else {
+                Toast.makeText(this, "Please log in to continue", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, LoginActivity.class));
+                finish();
+            }
+        });
+
+        btnOrderHistory.setOnClickListener(view -> {
+            if (userEmail != null) {
+                User user = viewModel.getUserByEmail(userEmail);
+                if (user != null) {
+                    Intent intent = new Intent(this, OrderHistoryActivity.class);
+                    intent.putExtra("USER_ID", user.getUserId());
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Please log in again", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, LoginActivity.class));
+                    finish();
+                }
+            } else {
+                Toast.makeText(this, "Please log in to continue", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, LoginActivity.class));
+                finish();
             }
         });
 
         btnUpdateUserDetails.setOnClickListener(view -> {
-            if (userEmail != null) { // Add null check for safety
+            if (userEmail != null) {
                 Intent intent = new Intent(this, UserInformationActivity.class);
                 intent.putExtra("USER_EMAIL", userEmail);
                 startActivity(intent);

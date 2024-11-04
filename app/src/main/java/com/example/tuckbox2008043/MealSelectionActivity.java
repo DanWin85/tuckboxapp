@@ -25,67 +25,75 @@ public class MealSelectionActivity extends MainMenuBarBaseActivity implements Me
     private RecyclerView mealsRecyclerView;
     private Button nextButton;
     private MealAdapter adapter;
-    private List<Food> selectedItems = new ArrayList<>();
+    private long userId;
+    private long cityId;
+    private long addressId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meal_selection);
 
-        // Initialize AppDataModel
-        appDataModel = new AppDataModel(getApplication());
+        // Get data from intent
+        Intent intent = getIntent();
+        userId = intent.getLongExtra("USER_ID", -1);
+        cityId = intent.getLongExtra("SELECTED_CITY_ID", -1);
+        addressId = intent.getLongExtra("SELECTED_ADDRESS_ID", -1);
 
+        Log.d(TAG, "Received values - UserId: " + userId +
+                ", CityId: " + cityId +
+                ", AddressId: " + addressId);
+
+        // Validate received data
+        if (userId == -1 || cityId == -1 || addressId == -1) {
+            Log.e(TAG, "Missing required data");
+            Toast.makeText(this, "Error: Missing required data", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        appDataModel = new AppDataModel(getApplication());
         initializeViews();
         setupMealsList();
         setupNextButton();
         isHome = false;
+    }
+    @Override
+    public void onQuantityChanged(Food food, int quantity) {
+        // This method is called when the quantity of a selected food changes
+        Log.d(TAG, "Quantity changed for " + food.getFoodName() + " to " + quantity);
     }
 
     private void setupMealsList() {
         List<Food> foods = appDataModel.getAllFoods();
         List<FoodExtraDetails> extras = appDataModel.getAllFoodExtras();
 
-        Log.d(TAG, "Foods loaded: " + foods.size());
-        Log.d(TAG, "Extras loaded: " + extras.size());
-
         adapter = new MealAdapter(foods, extras, this);
-        mealsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mealsRecyclerView.setAdapter(adapter);
+        mealsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     private void initializeViews() {
         mealsRecyclerView = findViewById(R.id.mealsRecyclerView);
         nextButton = findViewById(R.id.nextButton);
-
-        // Initially disable the next button
-        nextButton.setEnabled(false);
+        nextButton.setEnabled(false); // Initially disable the next button
     }
 
     @Override
     public void onMealSelected(Food item) {
-        if (!selectedItems.contains(item)) {
-            selectedItems.add(item);
-        }
-        nextButton.setEnabled(!selectedItems.isEmpty());
+        // Enable next button when at least one meal is selected
+        nextButton.setEnabled(true);
     }
 
     private void setupNextButton() {
         nextButton.setOnClickListener(v -> {
-            if (!selectedItems.isEmpty()) {
-                // Get the selected meals and extras from adapter
-                List<Food> selectedFoods = adapter.getSelectedFoods();
-                Map<Long, List<Long>> selectedExtras = adapter.getSelectedExtras();
+            List<Food> selectedFoods = adapter.getSelectedFoods();
+            Map<Long, List<Long>> selectedExtras = adapter.getSelectedExtras();
 
-                // Get the values from previous screens from intent
-                Intent currentIntent = getIntent();
-                long userId = currentIntent.getLongExtra("USER_ID", -1);
-                long cityId = currentIntent.getLongExtra("SELECTED_CITY_ID", -1);
-                long addressId = currentIntent.getLongExtra("SELECTED_ADDRESS_ID", -1);
-
-                // Create intent for next activity
+            if (!selectedFoods.isEmpty()) {
                 Intent intent = new Intent(this, TimeSlotActivity.class);
 
-                // Pass all values to next activity
+                // Pass all necessary data
                 intent.putExtra("USER_ID", userId);
                 intent.putExtra("SELECTED_CITY_ID", cityId);
                 intent.putExtra("SELECTED_ADDRESS_ID", addressId);
@@ -96,7 +104,7 @@ public class MealSelectionActivity extends MainMenuBarBaseActivity implements Me
                         .toArray();
                 intent.putExtra("SELECTED_FOOD_IDS", selectedFoodIds);
 
-                // Convert selected extras map to a format that can be passed in intent
+                // Pass the extras
                 Bundle extrasBundle = new Bundle();
                 for (Map.Entry<Long, List<Long>> entry : selectedExtras.entrySet()) {
                     long[] extraIds = entry.getValue().stream()
@@ -106,13 +114,11 @@ public class MealSelectionActivity extends MainMenuBarBaseActivity implements Me
                 }
                 intent.putExtra("SELECTED_EXTRAS", extrasBundle);
 
-                // Log the data being passed
-                Log.d(TAG, "Passing to TimeSlotActivity - " +
+                Log.d(TAG, "Starting TimeSlotActivity with - " +
                         "UserId: " + userId +
                         ", CityId: " + cityId +
                         ", AddressId: " + addressId +
-                        ", Selected Foods: " + selectedFoods.size() +
-                        ", Selected Extras: " + selectedExtras.size());
+                        ", Selected Foods: " + selectedFoods.size());
 
                 startActivity(intent);
             } else {

@@ -4,108 +4,126 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 import java.util.Date;
 
 
-@Entity(
-        tableName = "orders",
+@Entity(tableName = "orders",
+        indices = {
+                @Index("Food_Details_ID"),
+                @Index("City_ID"),
+                @Index("Time_Slot_ID"),
+                @Index("User_ID")
+        },
         foreignKeys = {
-                @ForeignKey(
-                        entity = FoodExtraDetails.class,
+                @ForeignKey(entity = FoodExtraDetails.class,
                         parentColumns = "Food_Details_ID",
                         childColumns = "Food_Details_ID",
-                        onDelete = ForeignKey.RESTRICT
-                ),
-                @ForeignKey(
-                        entity = City.class,
+                        onDelete = ForeignKey.RESTRICT),
+                @ForeignKey(entity = City.class,
                         parentColumns = "City_ID",
                         childColumns = "City_ID",
-                        onDelete = ForeignKey.RESTRICT
-                ),
-                @ForeignKey(
-                        entity = TimeSlot.class,
+                        onDelete = ForeignKey.RESTRICT),
+                @ForeignKey(entity = TimeSlot.class,
                         parentColumns = "Time_Slot_ID",
                         childColumns = "Time_Slot_ID",
-                        onDelete = ForeignKey.RESTRICT
-                ),
-                @ForeignKey(
-                        entity = User.class,
+                        onDelete = ForeignKey.RESTRICT),
+                @ForeignKey(entity = User.class,
                         parentColumns = "User_ID",
                         childColumns = "User_ID",
-                        onDelete = ForeignKey.RESTRICT
-                )
-        }
-)
+                        onDelete = ForeignKey.RESTRICT)
+        })
 public class Order implements Serializable {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "Order_ID")
+    private long orderId;
 
-        @PrimaryKey
-        @NonNull
-        @ColumnInfo(name = "Order_ID")
-        private String orderId;
+    @ColumnInfo(name = "Order_Date")
+    private Date orderDate;
 
-        @ColumnInfo(name = "Order_Date")
-        private Date orderDate;
+    @ColumnInfo(name = "Quantity")
+    private int quantity;
 
-        @ColumnInfo(name = "Quantity")
-        private int quantity;
+    @ColumnInfo(name = "Food_Details_ID")
+    private long foodDetailsId;
 
-        @NonNull
-        @ColumnInfo(name = "Food_Details_ID")
-        private String foodDetailsId;
+    @ColumnInfo(name = "City_ID")
+    private long cityId;
 
-        @NonNull
-        @ColumnInfo(name = "City_ID")
-        private String cityId;
+    @ColumnInfo(name = "Time_Slot_ID")
+    private long timeSlotId;
 
-        @NonNull
-        @ColumnInfo(name = "Time_Slot_ID")
-        private String timeSlotId;
+    @ColumnInfo(name = "User_ID")
+    private long userId;
 
-        @NonNull
-        @ColumnInfo(name = "User_ID")
-        private String userId;
+    public Order(int quantity, long foodDetailsId, long cityId, long timeSlotId, long userId) {
+        this.orderDate = new Date(); // Current date/time
+        this.quantity = quantity;
+        this.foodDetailsId = foodDetailsId;
+        this.cityId = cityId;
+        this.timeSlotId = timeSlotId;
+        this.userId = userId;
+    }
 
-        // Constructors
-        public Order(@NonNull String orderId, Date orderDate, int quantity,
-                     @NonNull String foodDetailsId, @NonNull String cityId,
-                     @NonNull String timeSlotId, @NonNull String userId) {
-            this.orderId = orderId;
-            this.orderDate = orderDate;
-            this.quantity = quantity;
-            this.foodDetailsId = foodDetailsId;
-            this.cityId = cityId;
-            this.timeSlotId = timeSlotId;
-            this.userId = userId;
-        }
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
 
-        // Getters and Setters
-        @NonNull
-        public String getOrderId() { return orderId; }
-        public void setOrderId(@NonNull String orderId) { this.orderId = orderId; }
+    public void setTimeSlotId(long timeSlotId) {
+        this.timeSlotId = timeSlotId;
+    }
 
-        public Date getOrderDate() { return orderDate; }
-        public void setOrderDate(Date orderDate) { this.orderDate = orderDate; }
+    public void setCityId(long cityId) {
+        this.cityId = cityId;
+    }
 
-        public int getQuantity() { return quantity; }
-        public void setQuantity(int quantity) { this.quantity = quantity; }
+    public void setFoodDetailsId(long foodDetailsId) {
+        this.foodDetailsId = foodDetailsId;
+    }
 
-        @NonNull
-        public String getFoodDetailsId() { return foodDetailsId; }
-        public void setFoodDetailsId(@NonNull String foodDetailsId) { this.foodDetailsId = foodDetailsId; }
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
-        @NonNull
-        public String getCityId() { return cityId; }
-        public void setCityId(@NonNull String cityId) { this.cityId = cityId; }
+    public void setOrderDate(Date orderDate) {
+        this.orderDate = orderDate;
+    }
 
-        @NonNull
-        public String getTimeSlotId() { return timeSlotId; }
-        public void setTimeSlotId(@NonNull String timeSlotId) { this.timeSlotId = timeSlotId; }
+    public void setOrderId(long orderId) {
+        this.orderId = orderId;
+    }
 
-        @NonNull
-        public String getUserId() { return userId; }
-        public void setUserId(@NonNull String userId) { this.userId = userId; }
+    // Add getters and setters
+
+    public long getOrderId() {
+        return orderId;
+    }
+
+    public Date getOrderDate() {
+        return orderDate;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public long getFoodDetailsId() {
+        return foodDetailsId;
+    }
+
+    public long getCityId() {
+        return cityId;
+    }
+
+    public long getTimeSlotId() {
+        return timeSlotId;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
 }
 

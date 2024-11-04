@@ -12,4 +12,11 @@ public class ConstantsNames {
     public static final String ADDRESS = "Address";
     public static final String ADDRESS_USER_ID = "User_ID";
 
+    public static final String ORDER_DATE = "Order_Date";
+    public static final String ORDER_QUANTITY = "Quantity";
+    public static final String ORDER_FOOD_DETAILS = "Food_Details_ID";
+    public static final String ORDER_CITY_ID = "City_ID";
+    public static final String ORDER_TIME_SLOT_ID = "Time_Slot_ID";
+    public static final String ORDER_USER_ID = "USER_ID";
+
 }

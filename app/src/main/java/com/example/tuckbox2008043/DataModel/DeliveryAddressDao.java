@@ -20,6 +20,9 @@ public interface DeliveryAddressDao {
     @Query("SELECT * FROM delivery_addresses WHERE User_ID = :userId")
     List<DeliveryAddress> getAddressesForUserDirect(long userId);
 
+    @Query("SELECT * FROM delivery_addresses WHERE address_id = :addressId")
+    DeliveryAddress getAddressById(long addressId);
+
     @Update
     int updateAddress(DeliveryAddress address);
 

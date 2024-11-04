@@ -4,10 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 @Entity(
         tableName = "food_extra_details",
+        indices = {
+                @Index("Food_ID")
+        },
         foreignKeys = @ForeignKey(
                 entity = Food.class,
                 parentColumns = "Food_ID",

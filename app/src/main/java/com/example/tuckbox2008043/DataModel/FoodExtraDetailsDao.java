@@ -19,6 +19,9 @@ public interface FoodExtraDetailsDao {
     @Query("SELECT * FROM food_extra_details WHERE Food_Details_ID = :detailsId")
     FoodExtraDetails getFoodExtraDetailsById(long detailsId);
 
+    @Query("SELECT * FROM food_extra_details WHERE Food_ID = :foodId")
+    List<FoodExtraDetails> getFoodExtraDetailsForFood(long foodId);
+
     @Insert
     void insert(FoodExtraDetails foodExtraDetails);
 

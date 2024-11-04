@@ -141,21 +141,25 @@ public class DeliveryAddressActivity extends MainMenuBarBaseActivity implements 
     }
 
     private void setupButtons() {
-        Log.d(TAG, "Setting up buttons");
-
         if (nextButton != null) {
             nextButton.setEnabled(false);
             nextButton.setOnClickListener(v -> {
                 if (selectedAddressId != -1) {
                     Intent intent = new Intent(this, MealSelectionActivity.class);
+                    intent.putExtra("USER_ID", userId);  // Make sure userId is set
+                    intent.putExtra("SELECTED_CITY_ID", selectedCityId);
                     intent.putExtra("SELECTED_ADDRESS_ID", selectedAddressId);
+
+                    Log.d(TAG, "Starting MealSelectionActivity with - " +
+                            "UserId: " + userId +
+                            ", CityId: " + selectedCityId +
+                            ", AddressId: " + selectedAddressId);
+
                     startActivity(intent);
                 } else {
                     Toast.makeText(this, "Please select an address", Toast.LENGTH_SHORT).show();
                 }
             });
         }
-
-
     }
 }

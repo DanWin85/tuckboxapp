@@ -4,6 +4,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,9 +26,11 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
     private Map<Long, List<FoodExtraDetails>> foodExtrasMap;
     private Map<Long, Boolean> selectedFoods;
     private Map<Long, List<Long>> selectedExtras;
+    private Map<Long, Integer> foodQuantities;
 
     public interface MealSelectionListener {
         void onMealSelected(Food food);
+        void onQuantityChanged(Food food, int quantity);
     }
 
     public MealAdapter(List<Food> foods, List<FoodExtraDetails> extras, MealSelectionListener listener) {
@@ -35,6 +39,7 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
         this.listener = listener;
         this.selectedFoods = new HashMap<>();
         this.selectedExtras = new HashMap<>();
+        this.foodQuantities = new HashMap<>(); // Initialize the new map
 
         // Group extras by food ID for easier access
         this.foodExtrasMap = new HashMap<>();
@@ -50,6 +55,15 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
                 .inflate(R.layout.item_meal_layout, parent, false);
         return new MealViewHolder(view);
     }
+    public Map<Long, Integer> getSelectedFoodQuantities() {
+        Map<Long, Integer> result = new HashMap<>();
+        for (Map.Entry<Long, Boolean> entry : selectedFoods.entrySet()) {
+            if (entry.getValue()) {
+                result.put(entry.getKey(), foodQuantities.getOrDefault(entry.getKey(), 1));
+            }
+        }
+        return result;
+    }
 
     @Override
     public void onBindViewHolder(@NonNull MealViewHolder holder, int position) {
@@ -59,7 +73,13 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
         holder.mealName.setText(food.getFoodName());
 
         // Set checkbox state
-        holder.mealCheckBox.setChecked(selectedFoods.getOrDefault(food.getFoodId(), false));
+        boolean isSelected = selectedFoods.getOrDefault(food.getFoodId(), false);
+        holder.mealCheckBox.setChecked(isSelected);
+
+        // Set quantity visibility and value
+        holder.quantityLayout.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+        holder.quantity = foodQuantities.getOrDefault(food.getFoodId(), 1);
+        holder.quantityText.setText(String.valueOf(holder.quantity));
 
         // Handle extras container visibility based on food's extraChoice flag
         if (food.isFoodExtraChoice()) {
@@ -72,11 +92,16 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
         // Handle meal selection
         holder.mealCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             selectedFoods.put(food.getFoodId(), isChecked);
+            holder.quantityLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+
             if (isChecked) {
+                foodQuantities.put(food.getFoodId(), holder.quantity);
                 listener.onMealSelected(food);
             } else {
-                // Clear selected extras when meal is deselected
+                foodQuantities.remove(food.getFoodId());
                 selectedExtras.remove(food.getFoodId());
+                holder.quantity = 1;
+                holder.quantityText.setText("1");
                 // Uncheck all extra checkboxes
                 for (int i = 0; i < holder.extrasContainer.getChildCount(); i++) {
                     View child = holder.extrasContainer.getChildAt(i);
@@ -85,8 +110,24 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
                     }
                 }
             }
-            // Enable/disable extras based on meal selection
             toggleExtrasState(holder.extrasContainer, isChecked);
+        });
+
+        // Setup quantity controls
+        holder.decreaseButton.setOnClickListener(v -> {
+            if (holder.quantity > 1) {
+                holder.quantity--;
+                holder.quantityText.setText(String.valueOf(holder.quantity));
+                foodQuantities.put(food.getFoodId(), holder.quantity);
+                listener.onQuantityChanged(food, holder.quantity);
+            }
+        });
+
+        holder.increaseButton.setOnClickListener(v -> {
+            holder.quantity++;
+            holder.quantityText.setText(String.valueOf(holder.quantity));
+            foodQuantities.put(food.getFoodId(), holder.quantity);
+            listener.onQuantityChanged(food, holder.quantity);
         });
     }
 
@@ -136,18 +177,6 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
         return foods.size();
     }
 
-    static class MealViewHolder extends RecyclerView.ViewHolder {
-        TextView mealName;
-        CheckBox mealCheckBox;
-        ViewGroup extrasContainer;
-
-        MealViewHolder(View itemView) {
-            super(itemView);
-            mealName = itemView.findViewById(R.id.mealName);
-            mealCheckBox = itemView.findViewById(R.id.mealCheckBox);
-            extrasContainer = itemView.findViewById(R.id.extrasContainer);
-        }
-    }
 
     public List<Food> getSelectedFoods() {
         List<Food> selected = new ArrayList<>();
@@ -161,5 +190,29 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
 
     public Map<Long, List<Long>> getSelectedExtras() {
         return new HashMap<>(selectedExtras);
+    }
+
+    static class MealViewHolder extends RecyclerView.ViewHolder {
+        TextView mealName;
+        CheckBox mealCheckBox;
+        ViewGroup extrasContainer;
+        // Add new quantity control fields
+        LinearLayout quantityLayout;
+        ImageButton decreaseButton;
+        ImageButton increaseButton;
+        TextView quantityText;
+        int quantity = 1;
+
+        MealViewHolder(View itemView) {
+            super(itemView);
+            mealName = itemView.findViewById(R.id.mealName);
+            mealCheckBox = itemView.findViewById(R.id.mealCheckBox);
+            extrasContainer = itemView.findViewById(R.id.extrasContainer);
+            // Initialize new quantity control views
+            quantityLayout = itemView.findViewById(R.id.quantityLayout);
+            decreaseButton = itemView.findViewById(R.id.decreaseButton);
+            increaseButton = itemView.findViewById(R.id.increaseButton);
+            quantityText = itemView.findViewById(R.id.quantityText);
+        }
     }
 }

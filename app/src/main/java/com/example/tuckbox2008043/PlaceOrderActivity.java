@@ -31,7 +31,12 @@ public class PlaceOrderActivity extends MainMenuBarBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_place_order);
 
+        Log.d(TAG, "onCreate started");
+
+        // Get userId from intent
         userId = getIntent().getLongExtra("USER_ID", -1);
+        Log.d(TAG, "Received USER_ID: " + userId);
+
         if (userId == -1) {
             Log.e(TAG, "No user ID available");
             Toast.makeText(this, "Please login to continue", Toast.LENGTH_SHORT).show();
@@ -41,6 +46,7 @@ public class PlaceOrderActivity extends MainMenuBarBaseActivity {
             startActivity(serviceIntent);
             finish();
             return;
+
         }
 
         Log.d(TAG, "onCreate started");
@@ -58,6 +64,7 @@ public class PlaceOrderActivity extends MainMenuBarBaseActivity {
         setupNextButton();
 
         Log.d(TAG, "onCreate completed");
+        isHome = false;
     }
 
     private void initializeViews() {
@@ -112,11 +119,12 @@ public class PlaceOrderActivity extends MainMenuBarBaseActivity {
         }
 
         try {
-            Log.d(TAG, "Creating intent for DeliveryAddressActivity");
+            Log.d(TAG, "Creating intent for DeliveryAddressActivity with userId: " + userId);
             Intent intent = new Intent(PlaceOrderActivity.this, DeliveryAddressActivity.class);
             intent.putExtra("SELECTED_CITY_ID", selectedCity.getCityId());
             intent.putExtra("USER_ID", userId);
-            Log.d(TAG, "Starting DeliveryAddressActivity with city ID: " + selectedCity.getCityId());
+            Log.d(TAG, "Starting DeliveryAddressActivity with city ID: " + selectedCity.getCityId() +
+                    " and userId: " + userId);
             startActivity(intent);
 
             // Add animation transition

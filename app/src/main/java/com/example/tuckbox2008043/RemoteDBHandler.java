@@ -6,12 +6,15 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import com.example.tuckbox2008043.DataModel.ConstantsNames;
 import com.example.tuckbox2008043.DataModel.DeliveryAddress;
+import com.example.tuckbox2008043.DataModel.Order;
 import com.example.tuckbox2008043.DataModel.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -20,6 +23,7 @@ public class RemoteDBHandler {
     private AppDataModel dataModel = null;
     private final String USER_DATA_COLLECTION = "Users";
     private final String ADDRESS_DATA_COLLECTION = "DeliveryAddresses";
+    private final String ORDER_DATA_COLLECTION = "Orders";
     private FirebaseFirestore cloudDB;
 
     public RemoteDBHandler(AppDataModel dataModel) {
@@ -150,6 +154,77 @@ public class RemoteDBHandler {
                 .addOnFailureListener(e -> {
                     Log.e("USER_UPDATE", "Failed to update user " + user.getUserEmail(), e);
                 });
+    }
+
+    public void insertOrder(Order order) {
+        String documentId = UUID.randomUUID().toString();
+
+        Map<String, Object> orderMap = getOrderMap(order);
+        orderMap.put("firestore_id", documentId);
+
+        cloudDB.collection(ORDER_DATA_COLLECTION)
+                .document(documentId)
+                .set(orderMap)
+                .addOnSuccessListener(unused -> {
+                    Log.d(TAG, "Order " + documentId + " is inserted in cloud DB");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Order " + documentId + " is not inserted in cloud DB", e);
+                });
+    }
+
+    public void syncOrdersForUser(long userId) {
+        cloudDB.collection(ORDER_DATA_COLLECTION)
+                .whereEqualTo("User_ID", userId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    Log.d(TAG, "Found " + queryDocumentSnapshots.size() + " orders for user " + userId);
+
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        try {
+                            Order order = documentToOrder(document);
+                            if (order != null) {
+                                // Insert into local database
+                                long result = dataModel.insertOrder(order);
+                                if (result == -1) {
+                                    Log.e(TAG, "Failed to insert synced order into local DB");
+                                } else {
+                                    Log.d(TAG, "Successfully synced order: " + order.getOrderId());
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error processing synced order", e);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to sync orders for user " + userId, e);
+                });
+    }
+    private Order documentToOrder(DocumentSnapshot document) {
+        try {
+            Date orderDate = document.getDate("Order_Date");
+            int quantity = document.getLong("Quantity").intValue();
+            long foodDetailsId = document.getLong("Food_Details_ID");
+            long cityId = document.getLong("City_ID");
+            long timeSlotId = document.getLong("Time_Slot_ID");
+            long userId = document.getLong("User_ID");
+
+            return new Order(quantity, foodDetailsId, cityId, timeSlotId, userId);
+        } catch (Exception e) {
+            Log.e(TAG, "Error converting document to Order", e);
+            return null;
+        }
+    }
+    private Map<String, Object> getOrderMap(Order order) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(ConstantsNames.ORDER_DATE, order.getOrderDate());
+        map.put(ConstantsNames.ORDER_QUANTITY, order.getQuantity());
+        map.put(ConstantsNames.ORDER_FOOD_DETAILS, order.getFoodDetailsId());
+        map.put(ConstantsNames.ORDER_CITY_ID, order.getCityId());
+        map.put(ConstantsNames.ORDER_TIME_SLOT_ID, order.getTimeSlotId());
+        map.put(ConstantsNames.ORDER_USER_ID, order.getUserId());
+        return map;
     }
 
     private Map<String, Object> getUserMap(User user) {

@@ -1,8 +1,11 @@
 package com.example.tuckbox2008043;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
@@ -11,11 +14,28 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-public class OrderConfirmationActivity extends AppCompatActivity {
+import com.example.tuckbox2008043.DataModel.DeliveryAddress;
+import com.example.tuckbox2008043.DataModel.Food;
+import com.example.tuckbox2008043.DataModel.FoodExtraDetails;
+import com.example.tuckbox2008043.DataModel.Order;
+import com.example.tuckbox2008043.DataModel.TimeSlot;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class OrderConfirmationActivity extends MainMenuBarBaseActivity{
+    private static final String TAG = "OrderConfirmActivity";
     private AppDataModel appDataModel;
     private TextView orderSummaryText;
     private Button confirmButton;
     private Button cancelButton;
+    private long userId;
+    private long cityId;
+    private long addressId;
+    private long[] selectedFoodIds;
+    private Map<Long, Integer> foodQuantities;
+    private long selectedTimeSlotId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,32 +44,143 @@ public class OrderConfirmationActivity extends AppCompatActivity {
 
         appDataModel = new AppDataModel(getApplication());
 
-        //initializeViews();
+        getDataFromIntent();
+        initializeViews();
         displayOrderSummary();
         setupButtons();
+        isHome = false;
+    }
+
+    private void getDataFromIntent() {
+        Intent intent = getIntent();
+        userId = intent.getLongExtra("USER_ID", -1);
+        cityId = intent.getLongExtra("SELECTED_CITY_ID", -1);
+        addressId = intent.getLongExtra("SELECTED_ADDRESS_ID", -1);
+        selectedFoodIds = intent.getLongArrayExtra("SELECTED_FOOD_IDS");
+        selectedTimeSlotId = intent.getLongExtra("SELECTED_TIME_SLOT_ID", -1);
+
+        Log.d(TAG, "Received data - UserId: " + userId +
+                ", CityId: " + cityId +
+                ", AddressId: " + addressId +
+                ", TimeSlotId: " + selectedTimeSlotId);
+
+        // Get quantities from bundle
+        Bundle quantityBundle = intent.getBundleExtra("FOOD_QUANTITIES");
+        foodQuantities = new HashMap<>();
+        if (quantityBundle != null) {
+            for (String key : quantityBundle.keySet()) {
+                foodQuantities.put(Long.parseLong(key), quantityBundle.getInt(key));
+            }
+        }
+
+        // Validate received data
+        if (userId == -1 || cityId == -1 || addressId == -1 ||
+                selectedTimeSlotId == -1 || selectedFoodIds == null ||
+                selectedFoodIds.length == 0) {
+            Log.e(TAG, "Missing required data");
+            Toast.makeText(this, "Error: Missing required data", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void initializeViews() {
+        orderSummaryText = findViewById(R.id.orderSummaryText);
+        confirmButton = findViewById(R.id.confirmButton);
+        cancelButton = findViewById(R.id.cancelButton);
     }
 
     private void displayOrderSummary() {
-        // Get all order details from previous activities via Intent
         StringBuilder summary = new StringBuilder();
+        summary.append("Order Summary\n\n");
+
         // Add delivery address
-        // Add selected meals and extras
+        DeliveryAddress address = appDataModel.getAddressById(addressId);
+        if (address != null) {
+            summary.append("Delivery Address:\n")
+                    .append(address.getAddress())
+                    .append("\n\n");
+        }
+
+        // Add selected meals and quantities
+        summary.append("Selected Items:\n");
+        for (long foodId : selectedFoodIds) {
+            Food food = appDataModel.getFoodById(foodId);
+            int quantity = foodQuantities.getOrDefault(foodId, 1);
+            if (food != null) {
+                summary.append("- ").append(food.getFoodName())
+                        .append(" (Qty: ").append(quantity).append(")\n");
+            }
+        }
+        summary.append("\n");
+
         // Add time slot
+        TimeSlot timeSlot = appDataModel.getTimeSlotById(selectedTimeSlotId);
+        if (timeSlot != null) {
+            summary.append("Delivery Time: ")
+                    .append(timeSlot.getTimeSlot())
+                    .append("\n");
+        }
+
         orderSummaryText.setText(summary.toString());
+    }
+
+    private void createOrders() {
+        boolean allOrdersSuccessful = true;
+
+        for (long foodId : selectedFoodIds) {
+            int quantity = foodQuantities.getOrDefault(foodId, 1);
+
+            // Get the FoodExtraDetails ID for this food
+            List<FoodExtraDetails> foodExtras = appDataModel.getFoodExtraDetailsForFood(foodId);
+            long foodDetailsId = foodExtras != null && !foodExtras.isEmpty() ?
+                    foodExtras.get(0).getFoodDetailsId() : foodId;
+
+            try {
+                Order order = new Order(
+                        quantity,
+                        foodDetailsId,  // Use foodDetailsId instead of foodId
+                        cityId,
+                        selectedTimeSlotId,
+                        userId
+                );
+
+                appDataModel.insertOrderWithSync(order);
+                Log.d(TAG, "Successfully created order for food: " + foodId);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to create order for food: " + foodId, e);
+                allOrdersSuccessful = false;
+                break;
+            }
+        }
+
+        if (allOrdersSuccessful) {
+            Toast.makeText(this, "Orders placed successfully!", Toast.LENGTH_SHORT).show();
+            navigateToServices();
+        } else {
+            Toast.makeText(this, "Failed to place some orders. Please try again.", Toast.LENGTH_LONG).show();
+            confirmButton.setEnabled(true);
+        }
+    }
+
+    private void navigateToServices() {
+        Intent intent = new Intent(this, ServicesActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void setupButtons() {
         confirmButton.setOnClickListener(v -> {
-            // Save order to database
-            // Show success message
-            finish(); // Return to main screen
+            // Disable button to prevent double submission
+            confirmButton.setEnabled(false);
+            createOrders();
         });
 
         cancelButton.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Cancel Order")
                     .setMessage("Are you sure you want to cancel your order?")
-                    .setPositiveButton("Yes", (dialog, which) -> finish())
+                    .setPositiveButton("Yes", (dialog, which) -> navigateToServices())
                     .setNegativeButton("No", null)
                     .show();
         });

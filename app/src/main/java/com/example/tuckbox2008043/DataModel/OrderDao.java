@@ -15,7 +15,7 @@ import java.util.List;
 @Dao
 public interface OrderDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Order order);
+    long insert(Order order);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<Order> orders);
@@ -30,40 +30,40 @@ public interface OrderDao {
     void deleteAll();
 
     @Query("SELECT * FROM orders WHERE Order_ID = :orderId")
-    LiveData<Order> getOrderById(String orderId);
-
-    @Query("SELECT * FROM orders")
-    LiveData<List<Order>> getAllOrders();
+    LiveData<Order> getOrderById(long orderId);
 
     @Query("SELECT * FROM orders WHERE User_ID = :userId")
-    LiveData<List<Order>> getOrdersByUser(String userId);
+    LiveData<List<Order>> getOrdersByUser(long userId);
 
     @Query("SELECT * FROM orders WHERE City_ID = :cityId")
-    LiveData<List<Order>> getOrdersByCity(String cityId);
+    LiveData<List<Order>> getOrdersByCity(long cityId);
 
     @Query("SELECT * FROM orders WHERE Food_Details_ID = :foodDetailsId")
-    LiveData<List<Order>> getOrdersByFoodDetails(String foodDetailsId);
+    LiveData<List<Order>> getOrdersByFoodDetails(long foodDetailsId);
 
     @Query("SELECT * FROM orders WHERE Time_Slot_ID = :timeSlotId")
-    LiveData<List<Order>> getOrdersByTimeSlot(String timeSlotId);
-
-    @Query("SELECT * FROM orders WHERE Order_Date BETWEEN :startDate AND :endDate")
-    LiveData<List<Order>> getOrdersByDateRange(Date startDate, Date endDate);
-
-    @Query("SELECT * FROM orders WHERE Order_Date = :date")
-    LiveData<List<Order>> getOrdersByDate(Date date);
+    LiveData<List<Order>> getOrdersByTimeSlot(long timeSlotId);
 
     @Query("SELECT COUNT(*) FROM orders WHERE User_ID = :userId")
-    LiveData<Integer> getOrderCountForUser(String userId);
+    LiveData<Integer> getOrderCountForUser(long userId);
 
     @Query("SELECT SUM(Quantity) FROM orders WHERE Food_Details_ID = :foodDetailsId")
-    LiveData<Integer> getTotalQuantityForFood(String foodDetailsId);
+    LiveData<Integer> getTotalQuantityForFood(long foodDetailsId);
 
     @Query("SELECT * FROM orders ORDER BY Order_Date DESC LIMIT :limit")
     LiveData<List<Order>> getRecentOrders(int limit);
 
     @Query("SELECT * FROM orders WHERE User_ID = :userId ORDER BY Order_Date DESC LIMIT :limit")
-    LiveData<List<Order>> getRecentOrdersByUser(String userId, int limit);
+    LiveData<List<Order>> getRecentOrdersByUser(long userId, int limit);
+
+    @Query("SELECT EXISTS(SELECT 1 FROM orders WHERE Order_ID = :orderId)")
+    LiveData<Boolean> orderExists(long orderId);
+
+    @Query("SELECT COUNT(*) FROM orders WHERE City_ID = :cityId AND Time_Slot_ID = :timeSlotId AND Order_Date = :date")
+    LiveData<Integer> getOrderCountForCityAndTimeSlot(long cityId, long timeSlotId, Date date);
+
+    @Query("SELECT * FROM orders WHERE User_ID = :userId ORDER BY Order_Date DESC LIMIT 1")
+    LiveData<Order> getMostRecentOrder(long userId);
 
     @Transaction
     @Query("SELECT EXISTS(SELECT 1 FROM orders WHERE Order_ID = :orderId)")

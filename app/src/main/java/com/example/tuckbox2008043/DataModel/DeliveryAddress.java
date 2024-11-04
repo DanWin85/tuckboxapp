@@ -3,12 +3,16 @@ package com.example.tuckbox2008043.DataModel;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 
 @Entity(
         tableName = "delivery_addresses",
+        indices = {
+          @Index("User_ID")
+        },
         foreignKeys = @ForeignKey(
                 entity = User.class,
                 parentColumns = "User_ID",

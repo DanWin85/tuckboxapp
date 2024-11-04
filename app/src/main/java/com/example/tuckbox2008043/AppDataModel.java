@@ -14,6 +14,8 @@ import com.example.tuckbox2008043.DataModel.Food;
 import com.example.tuckbox2008043.DataModel.FoodDao;
 import com.example.tuckbox2008043.DataModel.FoodExtraDetails;
 import com.example.tuckbox2008043.DataModel.FoodExtraDetailsDao;
+import com.example.tuckbox2008043.DataModel.Order;
+import com.example.tuckbox2008043.DataModel.OrderDao;
 import com.example.tuckbox2008043.DataModel.TimeSlot;
 import com.example.tuckbox2008043.DataModel.TimeSlotDao;
 import com.example.tuckbox2008043.DataModel.User;
@@ -30,6 +32,7 @@ public class AppDataModel {
     private final FoodExtraDetailsDao foodExtraDetailsDao;
     private final CityDao cityDao;
     private final TimeSlotDao timeSlotDao;
+    private final OrderDao orderDao;
     private final RemoteDBHandler remoteDBHandler;
 
     public AppDataModel(Application application){
@@ -40,6 +43,7 @@ public class AppDataModel {
         foodExtraDetailsDao = database.getFoodExtraDao();
         cityDao = database.getCityDao();
         timeSlotDao = database.getTimeSlotDao();
+        orderDao = database.getOrderDao();
         remoteDBHandler = new RemoteDBHandler(this);
         initializeFoodData();
         initializeFoodExtraData();
@@ -115,6 +119,58 @@ public class AppDataModel {
             remoteDBHandler.updateUser(user);
         }
         return updated;
+    }
+
+    public DeliveryAddress getAddressById(long addressId) {
+        return deliveryAddressDao.getAddressById(addressId);
+    }
+
+    public Food getFoodById(long foodId) {
+        return foodDao.getFoodById(foodId);
+    }
+
+    public TimeSlot getTimeSlotById(long timeSlotId) {
+        return timeSlotDao.getTimeSlotById(timeSlotId);
+    }
+
+    public void insertOrderWithSync(Order order) {
+        long localOrderId = insertOrder(order);
+        if (localOrderId != -1) {
+            remoteDBHandler.insertOrder(order);
+        }
+    }
+    public long insertOrder(Order order) {
+        try {
+            orderDao.insert(order);
+            return order.getOrderId();
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error inserting order", e);
+            return -1;
+        }
+    }
+
+    public LiveData<List<Order>> getOrdersByUser(long userId) {
+        return orderDao.getOrdersByUser(userId);
+    }
+
+    public LiveData<Order> getMostRecentOrder(long userId) {
+        return orderDao.getMostRecentOrder(userId);
+    }
+
+    public LiveData<Order> getOrderById(long orderId) {
+        return orderDao.getOrderById(orderId);
+    }
+
+    public City getCityById(long cityId) {
+        return cityDao.getCityById(cityId);
+    }
+
+    public LiveData<List<Order>> getOrdersForUser(long userId) {
+        return orderDao.getOrdersByUser(userId);
+    }
+
+    public List<FoodExtraDetails> getFoodExtraDetailsForFood(long foodId) {
+        return foodExtraDetailsDao.getFoodExtraDetailsForFood(foodId);
     }
 
     private void initializeFoodData() {
