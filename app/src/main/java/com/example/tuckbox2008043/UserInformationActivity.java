@@ -1,12 +1,18 @@
 package com.example.tuckbox2008043;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
+
+import com.example.tuckbox2008043.DataModel.DeliveryAddress;
+import com.example.tuckbox2008043.DataModel.Order;
 import com.example.tuckbox2008043.DataModel.User;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -17,7 +23,7 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
 
     private TextInputEditText etFirstName, etLastName, etEmail, etMobile, etPassword;
     private TextInputLayout tilFirstName, tilLastName, tilEmail, tilMobile, tilPassword;
-    private TextView tvCancel, tvAddNewDeliveryAddress;
+    private TextView tvCancel, tvAddNewDeliveryAddress, tvDeleteAccount;
     AppViewModel viewModel = null;
     private long userId;
     private User currentUser;
@@ -49,6 +55,7 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
 
         tvCancel = findViewById(R.id.tvCancel);
         tvAddNewDeliveryAddress = findViewById(R.id.tvAddNewDeliveryAddress);
+        tvDeleteAccount = findViewById(R.id.tvDeleteAccount);
         MaterialButton btnUpdate = findViewById(R.id.btnUpdate);
 
 
@@ -68,6 +75,50 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
                 updateUserInformation();
             }
         });
+        tvDeleteAccount.setOnClickListener(view -> {
+            deleteUserAccount();
+        });
+    }
+
+    private void deleteUserAccount() {
+        if (currentUser != null) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Account")
+                    .setMessage("Are you sure you want to delete your account? This action cannot be undone.")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // Show progress dialog
+                        ProgressDialog progressDialog = new ProgressDialog(this);
+                        progressDialog.setMessage("Deleting account...");
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
+
+                        // Call delete with callback
+                        viewModel.deleteUser(currentUser, success -> {
+                            progressDialog.dismiss();
+                            if (success) {
+                                // Clear shared preferences
+                                SharedPreferences preferences = getSharedPreferences(
+                                        AppViewModel.USER_PREF_DATA, MODE_PRIVATE);
+                                preferences.edit().clear().apply();
+
+                                Toast.makeText(this, "Account deleted successfully",
+                                        Toast.LENGTH_SHORT).show();
+
+                                // Return to login screen
+                                Intent intent = new Intent(this, LoginActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                Toast.makeText(this, "Failed to delete account. Please try again.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        }
     }
 
     private void loadUserData() {
@@ -159,6 +210,10 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
             }
         }
     }
+
+
+
+
 
     private boolean isValidEmail(String email) {
         Pattern pattern = Patterns.EMAIL_ADDRESS;

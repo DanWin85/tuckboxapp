@@ -1,5 +1,7 @@
 package com.example.tuckbox2008043;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.Application;
 import android.util.Log;
 
@@ -16,6 +18,8 @@ import com.example.tuckbox2008043.DataModel.FoodExtraDetails;
 import com.example.tuckbox2008043.DataModel.FoodExtraDetailsDao;
 import com.example.tuckbox2008043.DataModel.Order;
 import com.example.tuckbox2008043.DataModel.OrderDao;
+import com.example.tuckbox2008043.DataModel.OrderItem;
+import com.example.tuckbox2008043.DataModel.OrderItemDao;
 import com.example.tuckbox2008043.DataModel.TimeSlot;
 import com.example.tuckbox2008043.DataModel.TimeSlotDao;
 import com.example.tuckbox2008043.DataModel.User;
@@ -33,10 +37,12 @@ public class AppDataModel {
     private final CityDao cityDao;
     private final TimeSlotDao timeSlotDao;
     private final OrderDao orderDao;
+    private final OrderItemDao orderItemDao;
     private final RemoteDBHandler remoteDBHandler;
+    private final AppDatabase database;
 
-    public AppDataModel(Application application){
-        AppDatabase database = AppDatabase.createDatabaseInstance(application);
+    public AppDataModel(Application application) {
+        database = AppDatabase.createDatabaseInstance(application);
         userDao = database.getUserDao();
         deliveryAddressDao = database.getDeliveryAddressDao();
         foodDao = database.getFoodDao();
@@ -44,6 +50,7 @@ public class AppDataModel {
         cityDao = database.getCityDao();
         timeSlotDao = database.getTimeSlotDao();
         orderDao = database.getOrderDao();
+        orderItemDao = database.getOrderItemDao();
         remoteDBHandler = new RemoteDBHandler(this);
         initializeFoodData();
         initializeFoodExtraData();
@@ -60,6 +67,14 @@ public class AppDataModel {
             remoteDBHandler.insertUser(user);
         }
         return inserted;
+    }
+
+    public int updateUser(User user) {
+        int updated = userDao.updateUser(user);
+        if (updated > 0) {
+            remoteDBHandler.updateUser(user);
+        }
+        return updated;
     }
 
     public LiveData<List<User>> getLiveUserList(){
@@ -87,38 +102,54 @@ public class AppDataModel {
         else
             return null;
     }
-    public int deleteUser (User user){
-        return userDao.deleteUser(user);
-    }
+
 
     public long insertDeliveryAddress(DeliveryAddress address) {
-        long inserted = deliveryAddressDao.insertAddress(address);
-        if(inserted != -1) {
-            remoteDBHandler.insertDeliveryAddress(address);
+        try {
+            // Check if address already exists
+            List<DeliveryAddress> existingAddresses =
+                    deliveryAddressDao.getAddressesForUserDirect(address.getUserId());
+
+            boolean exists = existingAddresses.stream()
+                    .anyMatch(existing ->
+                            existing.getAddress().equals(address.getAddress()) &&
+                                    existing.getUserId() == address.getUserId()
+                    );
+
+            if (!exists) {
+                long result = deliveryAddressDao.insertAddress(address);
+                if (result != -1) {
+                    remoteDBHandler.insertDeliveryAddress(address);
+                    Log.d(TAG, "Address inserted successfully: " + address.getAddress());
+                }
+                return result;
+            } else {
+                Log.d(TAG, "Address already exists, skipping insert: " + address.getAddress());
+                return -1;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error inserting address", e);
+            return -1;
         }
-        return inserted;
     }
 
     public LiveData<List<DeliveryAddress>> getAddressesForUser(long userId) {
         return deliveryAddressDao.getAddressesForUser(userId);
     }
-    public int deleteDeliveryAddress(DeliveryAddress address) {
-        int deleted = deliveryAddressDao.deleteAddress(address);
-        if (deleted > 0) {
-            remoteDBHandler.deleteDeliveryAddress(address);
-        }
-        return deleted;
-    }
-    public void syncAddressesForUser(long userId) {
-        remoteDBHandler.syncAddressesForUser(userId);
+
+    public List<DeliveryAddress> getAddressesForUserDirect(long userId) {
+        return deliveryAddressDao.getAddressesForUserDirect(userId);
     }
 
-    public int updateUser(User user) {
-        int updated = userDao.updateUser(user);
-        if (updated > 0) {
-            remoteDBHandler.updateUser(user);
+
+
+    public void syncAddressesForUser(long userId) {
+        try {
+            Log.d(TAG, "Starting address sync for user: " + userId);
+            remoteDBHandler.syncAddressesForUser(userId);
+        } catch (Exception e) {
+            Log.e(TAG, "Error during address sync", e);
         }
-        return updated;
     }
 
     public DeliveryAddress getAddressById(long addressId) {
@@ -133,29 +164,73 @@ public class AppDataModel {
         return timeSlotDao.getTimeSlotById(timeSlotId);
     }
 
-    public void insertOrderWithSync(Order order) {
-        long localOrderId = insertOrder(order);
-        if (localOrderId != -1) {
-            remoteDBHandler.insertOrder(order);
-        }
-    }
     public long insertOrder(Order order) {
         try {
-            orderDao.insert(order);
-            return order.getOrderId();
+            return orderDao.insert(order);
         } catch (Exception e) {
             Log.e("AppDataModel", "Error inserting order", e);
             return -1;
         }
     }
 
-    public LiveData<List<Order>> getOrdersByUser(long userId) {
+    // Add the full insertOrder method for creating new orders
+    public long insertOrder(Order order, List<OrderItem> orderItems) {
+        try {
+            database.beginTransaction();
+
+            // Insert order
+            long orderId = orderDao.insert(order);
+            if (orderId != -1) {
+                // Insert order items
+                for (OrderItem item : orderItems) {
+                    item.setOrderId(orderId);
+                    orderItemDao.insert(item);
+                }
+
+                // Sync with cloud
+                remoteDBHandler.insertOrder(order, orderItems);
+            }
+
+            database.setTransactionSuccessful();
+            return orderId;
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error inserting order", e);
+            return -1;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    public long insertOrderItem(OrderItem item) {
+        try {
+            return orderItemDao.insert(item);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error inserting order item", e);
+            return -1;
+        }
+    }
+
+    public void syncOrdersForUser(long userId) {
+        remoteDBHandler.syncOrdersForUser(userId);
+    }
+
+    public LiveData<List<Order>> getOrdersForUser(long userId) {
         return orderDao.getOrdersByUser(userId);
     }
 
     public LiveData<Order> getMostRecentOrder(long userId) {
         return orderDao.getMostRecentOrder(userId);
     }
+
+    public LiveData<List<OrderItem>> getOrderItems(long orderId) {
+        return orderItemDao.getOrderItemsForOrder(orderId);
+    }
+
+    public LiveData<List<Order>> getOrdersByUser(long userId) {
+        return orderDao.getOrdersByUser(userId);
+    }
+
+
 
     public LiveData<Order> getOrderById(long orderId) {
         return orderDao.getOrderById(orderId);
@@ -165,9 +240,7 @@ public class AppDataModel {
         return cityDao.getCityById(cityId);
     }
 
-    public LiveData<List<Order>> getOrdersForUser(long userId) {
-        return orderDao.getOrdersByUser(userId);
-    }
+
 
     public List<FoodExtraDetails> getFoodExtraDetailsForFood(long foodId) {
         return foodExtraDetailsDao.getFoodExtraDetailsForFood(foodId);
@@ -260,4 +333,136 @@ public class AppDataModel {
     public int deleteAddress(DeliveryAddress address) {
         return deliveryAddressDao.deleteAddress(address);
     }
+
+    private boolean addressExists(DeliveryAddress address) {
+        List<DeliveryAddress> existingAddresses =
+                deliveryAddressDao.getAddressesForUserDirect(address.getUserId());
+
+        return existingAddresses.stream()
+                .anyMatch(existing ->
+                        existing.getAddress().equals(address.getAddress()) &&
+                                existing.getUserId() == address.getUserId()
+                );
+    }
+    public boolean deleteOrder(long orderId) {
+        try {
+            database.beginTransaction();
+
+            // First delete order items
+            orderItemDao.deleteOrderItems(orderId);
+
+            // Then delete the order
+            Order order = orderDao.getOrderById(orderId).getValue();
+            if (order != null) {
+                orderDao.delete(order);
+            }
+
+            database.setTransactionSuccessful();
+            return true;
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting order", e);
+            return false;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    public int deleteUser(User user) {
+        try {
+            database.beginTransaction();
+            int result = userDao.deleteUser(user);
+            if (result > 0) {
+                remoteDBHandler.deleteUser(user);
+            }
+            database.setTransactionSuccessful();
+            return result;
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting user", e);
+            return -1;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    public int deleteDeliveryAddress(DeliveryAddress address) {
+        try {
+            database.beginTransaction();
+            int result = deliveryAddressDao.deleteAddress(address);
+            if (result > 0) {
+                remoteDBHandler.deleteDeliveryAddress(address);
+            }
+            database.setTransactionSuccessful();
+            return result;
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting address", e);
+            return -1;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    public List<Order> getAllOrdersForUserSync(long userId) {
+        try {
+            return orderDao.getAllOrdersForUserSync(userId);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error getting orders", e);
+            return null;
+        }
+    }
+
+    public List<DeliveryAddress> getAllAddressesForUserSync(long userId) {
+        try {
+            return deliveryAddressDao.getAllAddressesForUserSync(userId);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error getting addresses", e);
+            return null;
+        }
+    }
+
+    public void beginTransaction() {
+        database.beginTransaction();
+    }
+
+    public void setTransactionSuccessful() {
+        database.setTransactionSuccessful();
+    }
+
+    public void endTransaction() {
+        database.endTransaction();
+    }
+
+    public void deleteOrderItems(long orderId) {
+        try {
+            orderItemDao.deleteOrderItems(orderId);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting order items for order: " + orderId, e);
+            throw e;
+        }
+    }
+
+    public void deleteAllUserOrderItems(long userId) {
+        try {
+            orderItemDao.deleteAllUserOrderItems(userId);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting order items for user: " + userId, e);
+            throw e;
+        }
+    }
+
+    public void deleteAllUserOrders(long userId) {
+        try {
+            orderDao.deleteAllUserOrders(userId);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting orders for user: " + userId, e);
+            throw e;
+        }
+    }
+
+    public FoodExtraDetails getFoodExtraDetailsById(long extraId) {
+        return foodExtraDetailsDao.getFoodExtraDetailsById(extraId);
+    }
+
+
+
+
 }

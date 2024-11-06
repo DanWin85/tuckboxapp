@@ -6,7 +6,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import java.util.ArrayList;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +18,7 @@ import com.example.tuckbox2008043.DataModel.DeliveryAddress;
 import com.example.tuckbox2008043.DataModel.Food;
 import com.example.tuckbox2008043.DataModel.FoodExtraDetails;
 import com.example.tuckbox2008043.DataModel.Order;
+import com.example.tuckbox2008043.DataModel.OrderItem;
 import com.example.tuckbox2008043.DataModel.TimeSlot;
 
 import java.util.HashMap;
@@ -101,14 +102,26 @@ public class OrderConfirmationActivity extends MainMenuBarBaseActivity{
                     .append("\n\n");
         }
 
-        // Add selected meals and quantities
+        // Add selected meals with quantities
         summary.append("Selected Items:\n");
         for (long foodId : selectedFoodIds) {
             Food food = appDataModel.getFoodById(foodId);
             int quantity = foodQuantities.getOrDefault(foodId, 1);
+
             if (food != null) {
                 summary.append("- ").append(food.getFoodName())
-                        .append(" (Qty: ").append(quantity).append(")\n");
+                        .append(" (Quantity: ").append(quantity).append(")\n");
+
+                // Add extras if any
+                List<Long> extras = getExtrasForFood(foodId);
+                if (extras != null && !extras.isEmpty()) {
+                    for (Long extraId : extras) {
+                        FoodExtraDetails extra = appDataModel.getFoodExtraDetailsById(extraId);
+                        if (extra != null) {
+                            summary.append("  • ").append(extra.getDetailsName()).append("\n");
+                        }
+                    }
+                }
             }
         }
         summary.append("\n");
@@ -124,40 +137,46 @@ public class OrderConfirmationActivity extends MainMenuBarBaseActivity{
         orderSummaryText.setText(summary.toString());
     }
 
-    private void createOrders() {
-        boolean allOrdersSuccessful = true;
-
-        for (long foodId : selectedFoodIds) {
-            int quantity = foodQuantities.getOrDefault(foodId, 1);
-
-            // Get the FoodExtraDetails ID for this food
-            List<FoodExtraDetails> foodExtras = appDataModel.getFoodExtraDetailsForFood(foodId);
-            long foodDetailsId = foodExtras != null && !foodExtras.isEmpty() ?
-                    foodExtras.get(0).getFoodDetailsId() : foodId;
-
-            try {
-                Order order = new Order(
-                        quantity,
-                        foodDetailsId,  // Use foodDetailsId instead of foodId
-                        cityId,
-                        selectedTimeSlotId,
-                        userId
-                );
-
-                appDataModel.insertOrderWithSync(order);
-                Log.d(TAG, "Successfully created order for food: " + foodId);
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to create order for food: " + foodId, e);
-                allOrdersSuccessful = false;
-                break;
+    private List<Long> getExtrasForFood(long foodId) {
+        Bundle extrasBundle = getIntent().getBundleExtra("SELECTED_EXTRAS");
+        if (extrasBundle != null) {
+            long[] extras = extrasBundle.getLongArray(String.valueOf(foodId));
+            if (extras != null) {
+                List<Long> extrasList = new ArrayList<>();
+                for (long extra : extras) {
+                    extrasList.add(extra);
+                }
+                return extrasList;
             }
         }
+        return null;
+    }
 
-        if (allOrdersSuccessful) {
-            Toast.makeText(this, "Orders placed successfully!", Toast.LENGTH_SHORT).show();
-            navigateToServices();
-        } else {
-            Toast.makeText(this, "Failed to place some orders. Please try again.", Toast.LENGTH_LONG).show();
+    private void createOrder() {
+        try {
+            // Create order
+            Order order = new Order(cityId, selectedTimeSlotId, userId);
+
+            // Create order items
+            List<OrderItem> orderItems = new ArrayList<>();
+            for (long foodId : selectedFoodIds) {
+                int quantity = foodQuantities.getOrDefault(foodId, 1);
+                orderItems.add(new OrderItem(0, foodId, quantity)); // orderId will be set later
+            }
+
+            // Insert order and items
+            long orderId = appDataModel.insertOrder(order, orderItems);
+
+            if (orderId != -1) {
+                Toast.makeText(this, "Order placed successfully!", Toast.LENGTH_LONG).show();
+                navigateToServices();
+            } else {
+                Toast.makeText(this, "Failed to create order", Toast.LENGTH_LONG).show();
+                confirmButton.setEnabled(true);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating order", e);
+            Toast.makeText(this, "Failed to create order", Toast.LENGTH_LONG).show();
             confirmButton.setEnabled(true);
         }
     }
@@ -173,7 +192,7 @@ public class OrderConfirmationActivity extends MainMenuBarBaseActivity{
         confirmButton.setOnClickListener(v -> {
             // Disable button to prevent double submission
             confirmButton.setEnabled(false);
-            createOrders();
+            createOrder();
         });
 
         cancelButton.setOnClickListener(v -> {

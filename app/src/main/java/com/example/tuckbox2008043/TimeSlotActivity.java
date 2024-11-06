@@ -120,28 +120,19 @@ public class TimeSlotActivity extends MainMenuBarBaseActivity {
     }
 
     private void setupNextButton() {
-        if (nextButton == null) {
-            Log.e(TAG, "nextButton is null");
-            return;
-        }
-
         nextButton.setOnClickListener(v -> {
             if (selectedTimeSlot != null) {
+                Intent currentIntent = getIntent();
                 Intent intent = new Intent(this, OrderConfirmationActivity.class);
 
-                // Pass all the data to the next activity
-                intent.putExtra("USER_ID", userId);
-                intent.putExtra("SELECTED_CITY_ID", cityId);
-                intent.putExtra("SELECTED_ADDRESS_ID", addressId);
-                intent.putExtra("SELECTED_FOOD_IDS", selectedFoodIds);
+                // Pass through all the data
+                intent.putExtra("USER_ID", currentIntent.getLongExtra("USER_ID", -1));
+                intent.putExtra("SELECTED_CITY_ID", currentIntent.getLongExtra("SELECTED_CITY_ID", -1));
+                intent.putExtra("SELECTED_ADDRESS_ID", currentIntent.getLongExtra("SELECTED_ADDRESS_ID", -1));
+                intent.putExtra("SELECTED_FOOD_IDS", currentIntent.getLongArrayExtra("SELECTED_FOOD_IDS"));
+                intent.putExtra("FOOD_QUANTITIES", currentIntent.getBundleExtra("FOOD_QUANTITIES"));
+                intent.putExtra("SELECTED_EXTRAS", currentIntent.getBundleExtra("SELECTED_EXTRAS"));
                 intent.putExtra("SELECTED_TIME_SLOT_ID", selectedTimeSlot.getTimeSlotId());
-
-                // Pass the extras bundle
-                Bundle extrasBundle = new Bundle();
-                for (Map.Entry<Long, long[]> entry : selectedExtras.entrySet()) {
-                    extrasBundle.putLongArray(String.valueOf(entry.getKey()), entry.getValue());
-                }
-                intent.putExtra("SELECTED_EXTRAS", extrasBundle);
 
                 startActivity(intent);
             } else {

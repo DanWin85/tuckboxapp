@@ -13,16 +13,11 @@ import java.util.Date;
 
 @Entity(tableName = "orders",
         indices = {
-                @Index("Food_Details_ID"),
                 @Index("City_ID"),
                 @Index("Time_Slot_ID"),
                 @Index("User_ID")
         },
         foreignKeys = {
-                @ForeignKey(entity = FoodExtraDetails.class,
-                        parentColumns = "Food_Details_ID",
-                        childColumns = "Food_Details_ID",
-                        onDelete = ForeignKey.RESTRICT),
                 @ForeignKey(entity = City.class,
                         parentColumns = "City_ID",
                         childColumns = "City_ID",
@@ -34,21 +29,15 @@ import java.util.Date;
                 @ForeignKey(entity = User.class,
                         parentColumns = "User_ID",
                         childColumns = "User_ID",
-                        onDelete = ForeignKey.RESTRICT)
+                        onDelete = ForeignKey.CASCADE)
         })
-public class Order implements Serializable {
+public class Order {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "Order_ID")
     private long orderId;
 
     @ColumnInfo(name = "Order_Date")
     private Date orderDate;
-
-    @ColumnInfo(name = "Quantity")
-    private int quantity;
-
-    @ColumnInfo(name = "Food_Details_ID")
-    private long foodDetailsId;
 
     @ColumnInfo(name = "City_ID")
     private long cityId;
@@ -59,44 +48,32 @@ public class Order implements Serializable {
     @ColumnInfo(name = "User_ID")
     private long userId;
 
-    public Order(int quantity, long foodDetailsId, long cityId, long timeSlotId, long userId) {
-        this.orderDate = new Date(); // Current date/time
-        this.quantity = quantity;
-        this.foodDetailsId = foodDetailsId;
+    public Order(long cityId, long timeSlotId, long userId) {
+        this.orderDate = new Date();
         this.cityId = cityId;
         this.timeSlotId = timeSlotId;
         this.userId = userId;
-    }
-
-    public void setUserId(long userId) {
-        this.userId = userId;
-    }
-
-    public void setTimeSlotId(long timeSlotId) {
-        this.timeSlotId = timeSlotId;
-    }
-
-    public void setCityId(long cityId) {
-        this.cityId = cityId;
-    }
-
-    public void setFoodDetailsId(long foodDetailsId) {
-        this.foodDetailsId = foodDetailsId;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public void setOrderDate(Date orderDate) {
-        this.orderDate = orderDate;
     }
 
     public void setOrderId(long orderId) {
         this.orderId = orderId;
     }
 
-    // Add getters and setters
+    public void setOrderDate(Date orderDate) {
+        this.orderDate = orderDate;
+    }
+
+    public void setCityId(long cityId) {
+        this.cityId = cityId;
+    }
+
+    public void setTimeSlotId(long timeSlotId) {
+        this.timeSlotId = timeSlotId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
 
     public long getOrderId() {
         return orderId;
@@ -104,14 +81,6 @@ public class Order implements Serializable {
 
     public Date getOrderDate() {
         return orderDate;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public long getFoodDetailsId() {
-        return foodDetailsId;
     }
 
     public long getCityId() {

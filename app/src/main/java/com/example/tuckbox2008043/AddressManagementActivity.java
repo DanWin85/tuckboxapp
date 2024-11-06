@@ -40,7 +40,6 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
         viewModel = new AppViewModel(getApplication());
         viewModel.syncAddressesForUser(userId);
         viewModel = new ViewModelProvider(this).get(AppViewModel.class);
-       // viewModel.debugAddresses(userId);
         initializeViews();
         setupRecyclerView();
         observeAddresses();

@@ -89,6 +89,7 @@ public class MealSelectionActivity extends MainMenuBarBaseActivity implements Me
         nextButton.setOnClickListener(v -> {
             List<Food> selectedFoods = adapter.getSelectedFoods();
             Map<Long, List<Long>> selectedExtras = adapter.getSelectedExtras();
+            Map<Long, Integer> selectedQuantities = adapter.getSelectedFoodQuantities();  // Get quantities
 
             if (!selectedFoods.isEmpty()) {
                 Intent intent = new Intent(this, TimeSlotActivity.class);
@@ -104,6 +105,13 @@ public class MealSelectionActivity extends MainMenuBarBaseActivity implements Me
                         .toArray();
                 intent.putExtra("SELECTED_FOOD_IDS", selectedFoodIds);
 
+                // Create bundle for quantities
+                Bundle quantityBundle = new Bundle();
+                for (Map.Entry<Long, Integer> entry : selectedQuantities.entrySet()) {
+                    quantityBundle.putInt(String.valueOf(entry.getKey()), entry.getValue());
+                }
+                intent.putExtra("FOOD_QUANTITIES", quantityBundle);
+
                 // Pass the extras
                 Bundle extrasBundle = new Bundle();
                 for (Map.Entry<Long, List<Long>> entry : selectedExtras.entrySet()) {
@@ -113,12 +121,6 @@ public class MealSelectionActivity extends MainMenuBarBaseActivity implements Me
                     extrasBundle.putLongArray(String.valueOf(entry.getKey()), extraIds);
                 }
                 intent.putExtra("SELECTED_EXTRAS", extrasBundle);
-
-                Log.d(TAG, "Starting TimeSlotActivity with - " +
-                        "UserId: " + userId +
-                        ", CityId: " + cityId +
-                        ", AddressId: " + addressId +
-                        ", Selected Foods: " + selectedFoods.size());
 
                 startActivity(intent);
             } else {

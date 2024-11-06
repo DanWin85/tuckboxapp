@@ -1,10 +1,12 @@
 package com.example.tuckbox2008043;
 
 import android.app.Application;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.example.tuckbox2008043.DataModel.City;
 import com.example.tuckbox2008043.DataModel.DeliveryAddress;
@@ -12,6 +14,8 @@ import com.example.tuckbox2008043.DataModel.Food;
 import com.example.tuckbox2008043.DataModel.FoodExtraDetails;
 import com.example.tuckbox2008043.DataModel.TimeSlot;
 import com.example.tuckbox2008043.DataModel.User;
+import com.example.tuckbox2008043.DataModel.Order;
+import com.example.tuckbox2008043.DataModel.OrderItem;
 
 import java.util.List;
 
@@ -23,27 +27,89 @@ public class AppViewModel extends AndroidViewModel {
     public static final String USER_PREF_USER_EMAIL = "USER_PREF_USER_EMAIL";
     public static final String USER_PREF_USER_PASSWORD = "USER_PREF_USER_PASSWORD";
 
-    public AppViewModel(Application application){
+    public AppViewModel(Application application) {
         super(application);
         dataModel = new AppDataModel(application);
     }
 
-    public long getNextUserID(){
+    // Existing methods...
+    // User methods
+    public long getNextUserID() {
         return dataModel.getNextUserId();
     }
 
-    public long insertUser(User user){
+    public long insertUser(User user) {
         return dataModel.insertUser(user);
     }
 
-    public LiveData<List<User>> getLiveUserList(){
+    public LiveData<List<User>> getLiveUserList() {
         return dataModel.getLiveUserList();
     }
 
-    public User getUserByEmail(String email){
+    public User getUserByEmail(String email) {
         return dataModel.getUserByEmail(email);
     }
 
+    public int updateUser(User user) {
+        return dataModel.updateUser(user);
+    }
+
+    public void deleteUser(User user, OnDeleteCallback callback) {
+        new Thread(() -> {
+            try {
+                // Start transaction
+                dataModel.beginTransaction();
+
+                Log.d("AppViewModel", "Starting user deletion process for userId: " + user.getUserId());
+
+                // 1. First delete all order items for this user
+                dataModel.deleteAllUserOrderItems(user.getUserId());
+                Log.d("AppViewModel", "Deleted all order items for user: " + user.getUserId());
+
+                // 2. Delete all orders for this user
+                dataModel.deleteAllUserOrders(user.getUserId());
+                Log.d("AppViewModel", "Deleted all orders for user: " + user.getUserId());
+
+                // 3. Delete addresses
+                List<DeliveryAddress> addresses = dataModel.getAllAddressesForUserSync(user.getUserId());
+                if (addresses != null && !addresses.isEmpty()) {
+                    Log.d("AppViewModel", "Found " + addresses.size() + " addresses to delete");
+                    for (DeliveryAddress address : addresses) {
+                        dataModel.deleteDeliveryAddress(address);
+                        Log.d("AppViewModel", "Deleted address: " + address.getAddressId());
+                    }
+                }
+
+                // 4. Finally delete the user
+                int result = dataModel.deleteUser(user);
+                Log.d("AppViewModel", "User deletion result: " + result);
+
+                // Commit transaction
+                dataModel.setTransactionSuccessful();
+
+                // Callback on main thread
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    callback.onComplete(result > 0);
+                });
+            } catch (Exception e) {
+                Log.e("AppViewModel", "Error deleting user", e);
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    callback.onComplete(false);
+                });
+            } finally {
+                dataModel.endTransaction();
+            }
+        }).start();
+    }
+
+    public interface OnDeleteCallback {
+        void onComplete(boolean success);
+    }
+
+
+
+
+    // Address methods
     public long insertDeliveryAddress(DeliveryAddress address) {
         return dataModel.insertDeliveryAddress(address);
     }
@@ -51,19 +117,50 @@ public class AppViewModel extends AndroidViewModel {
     public LiveData<List<DeliveryAddress>> getAddressesForUser(long userId) {
         return dataModel.getAddressesForUser(userId);
     }
+
     public int deleteDeliveryAddress(DeliveryAddress address) {
         return dataModel.deleteDeliveryAddress(address);
     }
+
     public void syncAddressesForUser(long userId) {
         dataModel.syncAddressesForUser(userId);
     }
 
-    public int updateUser(User user) {
-        return dataModel.updateUser(user);
+    // Order methods
+    public LiveData<List<Order>> getOrdersForUser(long userId) {
+        return dataModel.getOrdersForUser(userId);
     }
-    public List<Food> getAllFoods(){return dataModel.getAllFoods();}
-    public List<FoodExtraDetails> getAllFoodExtras(){return dataModel.getAllFoodExtras();}
-    public List<City> getAllCities(){return dataModel.getAllCities();}
-    public List<TimeSlot>getAllTimeSlots(){return dataModel.getAllTimeSlots();}
 
+    public void deleteOrder(Order order) {
+        dataModel.deleteOrder(order.getOrderId());
+    }
+
+    public long insertOrder(Order order, List<OrderItem> orderItems) {
+        return dataModel.insertOrder(order, orderItems);
+    }
+
+    public LiveData<Order> getMostRecentOrder(long userId) {
+        return dataModel.getMostRecentOrder(userId);
+    }
+
+    public LiveData<List<OrderItem>> getOrderItems(long orderId) {
+        return dataModel.getOrderItems(orderId);
+    }
+
+    // Get methods for other entities
+    public List<Food> getAllFoods() {
+        return dataModel.getAllFoods();
+    }
+
+    public List<FoodExtraDetails> getAllFoodExtras() {
+        return dataModel.getAllFoodExtras();
+    }
+
+    public List<City> getAllCities() {
+        return dataModel.getAllCities();
+    }
+
+    public List<TimeSlot> getAllTimeSlots() {
+        return dataModel.getAllTimeSlots();
+    }
 }

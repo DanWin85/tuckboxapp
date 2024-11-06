@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
 @Database(
-            entities = {User.class, DeliveryAddress.class, Food.class, FoodExtraDetails.class, City.class, TimeSlot.class, Order.class},
+            entities = {User.class, DeliveryAddress.class, Food.class, FoodExtraDetails.class, City.class, TimeSlot.class, Order.class, OrderItem.class},
             version = 1,
             exportSchema = false
 )
@@ -24,6 +24,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract CityDao getCityDao();
     public abstract TimeSlotDao getTimeSlotDao();
     public abstract OrderDao getOrderDao();
+    public abstract OrderItemDao getOrderItemDao();
 
 
     public static AppDatabase createDatabaseInstance(Context context){
@@ -38,4 +39,8 @@ public abstract class AppDatabase extends RoomDatabase {
         }
         return instance;
     }
+
+
+
+
 }

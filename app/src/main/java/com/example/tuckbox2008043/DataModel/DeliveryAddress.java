@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Entity(
         tableName = "delivery_addresses",
         indices = {
-          @Index("User_ID")
+                @Index(value = {"User_ID", "Address"}, unique = true)  // Prevents duplicate addresses per user
         },
         foreignKeys = @ForeignKey(
                 entity = User.class,
@@ -46,4 +46,13 @@ public class DeliveryAddress implements Serializable {
 
     public long getUserId() { return userId; }
     public void setUserId(long userId) { this.userId = userId; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DeliveryAddress that = (DeliveryAddress) o;
+        return userId == that.userId &&
+                (address != null ? address.equals(that.address) : that.address == null);
+    }
 }
