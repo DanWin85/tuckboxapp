@@ -43,7 +43,7 @@ public class CurrentOrderActivity extends MainMenuBarBaseActivity {
 
         initializeViews();
         displayCurrentOrder();
-        isHome = false;
+     //   isHome = false;
     }
 
     private void initializeViews() {

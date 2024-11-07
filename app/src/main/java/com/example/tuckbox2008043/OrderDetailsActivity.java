@@ -38,7 +38,7 @@ public class OrderDetailsActivity extends MainMenuBarBaseActivity {
             finish();
             return;
         }
-        isHome = false;
+      //  isHome = false;
         initializeViews();
         displayOrderDetails();
     }

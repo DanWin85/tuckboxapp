@@ -72,7 +72,7 @@ public class DeliveryAddressActivity extends MainMenuBarBaseActivity implements 
         setupButtons();
 
         Log.d(TAG, "onCreate completed");
-        isHome = false;
+        //isHome = false;
     }
 
     private void initializeModels() {

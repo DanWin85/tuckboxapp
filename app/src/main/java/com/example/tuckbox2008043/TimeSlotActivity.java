@@ -82,7 +82,7 @@ public class TimeSlotActivity extends MainMenuBarBaseActivity {
         // Setup the views
         setupTimeSlots();
         setupNextButton();
-        isHome = false;
+    //    isHome = false;
     }
 
     private void initializeViews() {

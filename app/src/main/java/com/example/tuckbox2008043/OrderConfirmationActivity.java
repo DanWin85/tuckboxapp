@@ -49,7 +49,7 @@ public class OrderConfirmationActivity extends MainMenuBarBaseActivity{
         initializeViews();
         displayOrderSummary();
         setupButtons();
-        isHome = false;
+     //   isHome = false;
     }
 
     private void getDataFromIntent() {
