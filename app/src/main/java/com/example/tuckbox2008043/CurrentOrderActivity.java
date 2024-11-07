@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.tuckbox2008043.DataModel.City;
+import com.example.tuckbox2008043.DataModel.DeliveryAddress;
 import com.example.tuckbox2008043.DataModel.Food;
 import com.example.tuckbox2008043.DataModel.Order;
 import com.example.tuckbox2008043.DataModel.OrderItem;
@@ -43,7 +44,6 @@ public class CurrentOrderActivity extends MainMenuBarBaseActivity {
 
         initializeViews();
         displayCurrentOrder();
-     //   isHome = false;
     }
 
     private void initializeViews() {
@@ -93,6 +93,13 @@ public class CurrentOrderActivity extends MainMenuBarBaseActivity {
             if (city != null) {
                 details.append("Delivery City: ")
                         .append(city.getCityName())
+                        .append("\n\n");
+            }
+            // Add address
+            DeliveryAddress deliveryAddress = appDataModel.getDeliveryAddressById(order.getAddressId());
+            if (deliveryAddress != null){
+                details.append("Delivery Address: ")
+                        .append(deliveryAddress.getAddress())
                         .append("\n\n");
             }
 

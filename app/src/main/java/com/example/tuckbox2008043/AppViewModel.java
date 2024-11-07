@@ -32,8 +32,6 @@ public class AppViewModel extends AndroidViewModel {
         dataModel = new AppDataModel(application);
     }
 
-    // Existing methods...
-    // User methods
     public long getNextUserID() {
         return dataModel.getNextUserId();
     }
@@ -57,37 +55,32 @@ public class AppViewModel extends AndroidViewModel {
     public void deleteUser(User user, OnDeleteCallback callback) {
         new Thread(() -> {
             try {
-                // Start transaction
                 dataModel.beginTransaction();
 
-                Log.d("AppViewModel", "Starting user deletion process for userId: " + user.getUserId());
+                long userId = user.getUserId();
+                Log.d("AppViewModel", "Starting user deletion process for userId: " + userId);
 
-                // 1. First delete all order items for this user
-                dataModel.deleteAllUserOrderItems(user.getUserId());
-                Log.d("AppViewModel", "Deleted all order items for user: " + user.getUserId());
+                // 1. Delete all orders and their items
+                boolean ordersDeleted = dataModel.deleteAllUserOrdersAndItems(userId);
+                Log.d("AppViewModel", "Orders deletion result: " + ordersDeleted);
 
-                // 2. Delete all orders for this user
-                dataModel.deleteAllUserOrders(user.getUserId());
-                Log.d("AppViewModel", "Deleted all orders for user: " + user.getUserId());
+                // 2. Delete addresses
+                List<DeliveryAddress> addresses = dataModel.getAllAddressesForUserSync(userId);
+                Log.d("AppViewModel", "Found addresses count: " + (addresses != null ? addresses.size() : 0));
 
-                // 3. Delete addresses
-                List<DeliveryAddress> addresses = dataModel.getAllAddressesForUserSync(user.getUserId());
-                if (addresses != null && !addresses.isEmpty()) {
-                    Log.d("AppViewModel", "Found " + addresses.size() + " addresses to delete");
+                if (addresses != null) {
                     for (DeliveryAddress address : addresses) {
                         dataModel.deleteDeliveryAddress(address);
                         Log.d("AppViewModel", "Deleted address: " + address.getAddressId());
                     }
                 }
 
-                // 4. Finally delete the user
+                // 3. Delete the user
                 int result = dataModel.deleteUser(user);
                 Log.d("AppViewModel", "User deletion result: " + result);
 
-                // Commit transaction
                 dataModel.setTransactionSuccessful();
 
-                // Callback on main thread
                 new Handler(Looper.getMainLooper()).post(() -> {
                     callback.onComplete(result > 0);
                 });

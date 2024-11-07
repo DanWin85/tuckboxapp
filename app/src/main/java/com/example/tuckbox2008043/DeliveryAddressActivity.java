@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tuckbox2008043.DataModel.DeliveryAddress;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class DeliveryAddressActivity extends MainMenuBarBaseActivity implements 
     private AppViewModel appViewModel;
     private RecyclerView addressRecyclerView;
     private AddressAdapter addressAdapter;
-    private Button nextButton;
+    private MaterialButton  nextButton;
     private long selectedAddressId = -1;
     private long userId;
     private LiveData<List<DeliveryAddress>> addressesLiveData;

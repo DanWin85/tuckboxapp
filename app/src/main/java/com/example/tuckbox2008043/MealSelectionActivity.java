@@ -14,6 +14,7 @@ import com.example.tuckbox2008043.DataModel.Food;
 import com.example.tuckbox2008043.DataModel.FoodExtraDetails;
 import com.example.tuckbox2008043.MealAdapter;
 import com.example.tuckbox2008043.R;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class MealSelectionActivity extends MainMenuBarBaseActivity implements Me
     private static final String TAG = "MealSelectionActivity";
     private AppDataModel appDataModel;
     private RecyclerView mealsRecyclerView;
-    private Button nextButton;
+    private MaterialButton nextButton;
     private MealAdapter adapter;
     private long userId;
     private long cityId;

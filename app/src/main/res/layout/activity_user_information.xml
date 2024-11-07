@@ -149,7 +149,7 @@
 
 
 
-        <!-- Register Button -->
+        <!-- Update Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnUpdate"
             android:layout_width="match_parent"

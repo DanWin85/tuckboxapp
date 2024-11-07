@@ -86,17 +86,14 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
                     .setTitle("Delete Account")
                     .setMessage("Are you sure you want to delete your account? This action cannot be undone.")
                     .setPositiveButton("Yes", (dialog, which) -> {
-                        // Show progress dialog
                         ProgressDialog progressDialog = new ProgressDialog(this);
-                        progressDialog.setMessage("Deleting account...");
+                        progressDialog.setMessage("Deleting account data...");
                         progressDialog.setCancelable(false);
                         progressDialog.show();
 
-                        // Call delete with callback
                         viewModel.deleteUser(currentUser, success -> {
                             progressDialog.dismiss();
                             if (success) {
-                                // Clear shared preferences
                                 SharedPreferences preferences = getSharedPreferences(
                                         AppViewModel.USER_PREF_DATA, MODE_PRIVATE);
                                 preferences.edit().clear().apply();
@@ -104,15 +101,14 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
                                 Toast.makeText(this, "Account deleted successfully",
                                         Toast.LENGTH_SHORT).show();
 
-                                // Return to login screen
                                 Intent intent = new Intent(this, LoginActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
                                         Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                 startActivity(intent);
                                 finish();
                             } else {
-                                Toast.makeText(this, "Failed to delete account. Please try again.",
-                                        Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Failed to delete account. Check logs for details.",
+                                        Toast.LENGTH_LONG).show();
                             }
                         });
                     })

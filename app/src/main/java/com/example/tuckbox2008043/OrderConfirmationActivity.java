@@ -14,6 +14,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.tuckbox2008043.DataModel.City;
 import com.example.tuckbox2008043.DataModel.DeliveryAddress;
 import com.example.tuckbox2008043.DataModel.Food;
 import com.example.tuckbox2008043.DataModel.FoodExtraDetails;
@@ -94,8 +95,16 @@ public class OrderConfirmationActivity extends MainMenuBarBaseActivity{
         StringBuilder summary = new StringBuilder();
         summary.append("Order Summary\n\n");
 
+        // Add city
+        City city = appDataModel.getCityById(cityId);
+        if (city != null) {
+            summary.append("Delivery City:\n")
+                    .append(city.getCityName())
+                    .append("\n\n");
+        }
+
         // Add delivery address
-        DeliveryAddress address = appDataModel.getAddressById(addressId);
+        DeliveryAddress address = appDataModel.getDeliveryAddressById(addressId);
         if (address != null) {
             summary.append("Delivery Address:\n")
                     .append(address.getAddress())
@@ -109,19 +118,11 @@ public class OrderConfirmationActivity extends MainMenuBarBaseActivity{
             int quantity = foodQuantities.getOrDefault(foodId, 1);
 
             if (food != null) {
-                summary.append("- ").append(food.getFoodName())
-                        .append(" (Quantity: ").append(quantity).append(")\n");
-
-                // Add extras if any
-                List<Long> extras = getExtrasForFood(foodId);
-                if (extras != null && !extras.isEmpty()) {
-                    for (Long extraId : extras) {
-                        FoodExtraDetails extra = appDataModel.getFoodExtraDetailsById(extraId);
-                        if (extra != null) {
-                            summary.append("  • ").append(extra.getDetailsName()).append("\n");
-                        }
-                    }
-                }
+                summary.append("- ")
+                        .append(food.getFoodName())
+                        .append(" (Quantity: ")
+                        .append(quantity)
+                        .append(")\n");
             }
         }
         summary.append("\n");
@@ -155,7 +156,7 @@ public class OrderConfirmationActivity extends MainMenuBarBaseActivity{
     private void createOrder() {
         try {
             // Create order
-            Order order = new Order(cityId, selectedTimeSlotId, userId);
+            Order order = new Order(cityId, addressId, selectedTimeSlotId, userId);
 
             // Create order items
             List<OrderItem> orderItems = new ArrayList<>();

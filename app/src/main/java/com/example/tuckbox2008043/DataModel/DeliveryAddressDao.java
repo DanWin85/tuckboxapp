@@ -12,7 +12,7 @@ import java.util.List;
 
 @Dao
 public interface DeliveryAddressDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)  // Changed from ABORT to IGNORE
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     long insertAddress(DeliveryAddress address);
 
     @Query("SELECT * FROM delivery_addresses WHERE User_ID = :userId")
@@ -35,4 +35,7 @@ public interface DeliveryAddressDao {
 
     @Query("SELECT * FROM delivery_addresses WHERE User_ID = :userId")
     List<DeliveryAddress> getAllAddressesForUserSync(long userId);
+
+    @Query("SELECT * FROM delivery_addresses WHERE address_id = :addressId")
+    DeliveryAddress getDeliveryAddressById(long addressId);
 }

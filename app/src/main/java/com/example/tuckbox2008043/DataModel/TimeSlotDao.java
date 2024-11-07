@@ -14,9 +14,6 @@ public interface TimeSlotDao {
         @Query("SELECT * FROM time_slots")
         List<TimeSlot> getAllTimeSlots();
 
-//        @Query("SELECT * FROM time_slots WHERE Time_Slot_ID = :timeSlotId")
-//        TimeSlot getTimeSlotById(String timeSlotId);
-
         @Query("SELECT * FROM time_slots WHERE time_slot_id = :timeSlotId")
         TimeSlot getTimeSlotById(long timeSlotId);
 

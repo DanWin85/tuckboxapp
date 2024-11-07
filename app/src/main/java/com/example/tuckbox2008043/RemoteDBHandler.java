@@ -205,19 +205,7 @@ public class RemoteDBHandler {
     }
 
 
-    private Order documentToOrder(DocumentSnapshot document) {
-        try {
-            Date orderDate = document.getDate("Order_Date");
-            long cityId = document.getLong("City_ID");
-            long timeSlotId = document.getLong("Time_Slot_ID");
-            long userId = document.getLong("User_ID");
 
-            return new Order(cityId, timeSlotId, userId);
-        } catch (Exception e) {
-            Log.e(TAG, "Error converting document to Order", e);
-            return null;
-        }
-    }
     public void insertOrderWithItems(Order order, List<OrderItem> orderItems) {
         String orderId = UUID.randomUUID().toString();
         Map<String, Object> orderMap = getOrderMap(order);
@@ -288,8 +276,9 @@ public class RemoteDBHandler {
                             Date orderDate = document.getDate(ConstantsNames.ORDER_DATE);
                             long cityId = document.getLong(ConstantsNames.CITY_ID);
                             long timeSlotId = document.getLong(ConstantsNames.TIME_SLOT_ID);
+                            long addressId = document.getLong(ConstantsNames.ADDRESS_ID);
 
-                            Order order = new Order(cityId, timeSlotId, userId);
+                            Order order = new Order(cityId, addressId, timeSlotId, userId);
                             order.setOrderDate(orderDate);
 
                             // Insert into local database

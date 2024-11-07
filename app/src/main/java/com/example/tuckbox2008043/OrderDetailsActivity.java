@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.tuckbox2008043.DataModel.City;
+import com.example.tuckbox2008043.DataModel.DeliveryAddress;
 import com.example.tuckbox2008043.DataModel.Food;
 import com.example.tuckbox2008043.DataModel.Order;
 import com.example.tuckbox2008043.DataModel.OrderItem;
@@ -67,10 +68,26 @@ public class OrderDetailsActivity extends MainMenuBarBaseActivity {
                 .append("\nDate: ").append(dateFormat.format(order.getOrderDate()))
                 .append("\n\n");
 
-        // Get order items
+        // Add city
+        City city = appDataModel.getCityById(order.getCityId());
+        if (city != null) {
+            details.append("Delivery City: ")
+                    .append(city.getCityName())
+                    .append("\n\n");
+        }
+
+        // Add delivery address
+        DeliveryAddress address = appDataModel.getDeliveryAddressById(order.getAddressId());
+        if (address != null) {
+            details.append("Delivery Address:\n")
+                    .append(address.getAddress())
+                    .append("\n\n");
+        }
+
+        // Add items
+        details.append("Items:\n");
         appDataModel.getOrderItems(order.getOrderId()).observe(this, orderItems -> {
             if (orderItems != null && !orderItems.isEmpty()) {
-                details.append("Items:\n");
                 for (OrderItem item : orderItems) {
                     Food food = appDataModel.getFoodById(item.getFoodId());
                     if (food != null) {
@@ -81,21 +98,12 @@ public class OrderDetailsActivity extends MainMenuBarBaseActivity {
                                 .append(")\n");
                     }
                 }
-                details.append("\n");
-            }
-
-            // Add city
-            City city = appDataModel.getCityById(order.getCityId());
-            if (city != null) {
-                details.append("Delivery City: ")
-                        .append(city.getCityName())
-                        .append("\n\n");
             }
 
             // Add time slot
             TimeSlot timeSlot = appDataModel.getTimeSlotById(order.getTimeSlotId());
             if (timeSlot != null) {
-                details.append("Delivery Time: ")
+                details.append("\nDelivery Time: ")
                         .append(timeSlot.getTimeSlot())
                         .append("\n");
             }

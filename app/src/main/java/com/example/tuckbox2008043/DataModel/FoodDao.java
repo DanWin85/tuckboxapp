@@ -13,9 +13,6 @@ public interface FoodDao {
     @Query("SELECT * FROM foods")
     List<Food> getAllFoods();
 
-//    @Query("SELECT * FROM foods WHERE Food_ID = :foodId")
-//    Food getFoodById(String foodId);
-
     @Query("SELECT * FROM foods WHERE food_id = :foodId")
     Food getFoodById(long foodId);
 

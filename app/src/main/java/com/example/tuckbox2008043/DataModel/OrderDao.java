@@ -46,5 +46,13 @@ public interface OrderDao {
 
     @Query("DELETE FROM orders WHERE User_ID = :userId")
     void deleteAllUserOrders(long userId);
+
+    @Query("SELECT * FROM orders WHERE Order_ID = :orderId")
+    Order getOrderByIdSync(long orderId);
+
+
+    @Query("DELETE FROM orders WHERE Order_ID = :orderId")
+    int deleteOrderById(long orderId);
+
 }
 

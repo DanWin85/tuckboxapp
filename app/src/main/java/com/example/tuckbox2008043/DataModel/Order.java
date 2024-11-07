@@ -13,23 +13,29 @@ import java.util.Date;
 
 @Entity(tableName = "orders",
         indices = {
+                @Index("User_ID"),
                 @Index("City_ID"),
-                @Index("Time_Slot_ID"),
-                @Index("User_ID")
+                @Index("Time_Slot_ID")
         },
         foreignKeys = {
-                @ForeignKey(entity = City.class,
-                        parentColumns = "City_ID",
-                        childColumns = "City_ID",
-                        onDelete = ForeignKey.RESTRICT),
-                @ForeignKey(entity = TimeSlot.class,
-                        parentColumns = "Time_Slot_ID",
-                        childColumns = "Time_Slot_ID",
-                        onDelete = ForeignKey.RESTRICT),
-                @ForeignKey(entity = User.class,
+                @ForeignKey(
+                        entity = User.class,
                         parentColumns = "User_ID",
                         childColumns = "User_ID",
-                        onDelete = ForeignKey.CASCADE)
+                        onDelete = ForeignKey.CASCADE
+                ),
+                @ForeignKey(
+                        entity = City.class,
+                        parentColumns = "City_ID",
+                        childColumns = "City_ID",
+                        onDelete = ForeignKey.RESTRICT
+                ),
+                @ForeignKey(
+                        entity = TimeSlot.class,
+                        parentColumns = "Time_Slot_ID",
+                        childColumns = "Time_Slot_ID",
+                        onDelete = ForeignKey.RESTRICT
+                )
         })
 public class Order {
     @PrimaryKey(autoGenerate = true)
@@ -42,15 +48,19 @@ public class Order {
     @ColumnInfo(name = "City_ID")
     private long cityId;
 
+    @ColumnInfo(name = "Address_ID")
+    private long addressId;
+
     @ColumnInfo(name = "Time_Slot_ID")
     private long timeSlotId;
 
     @ColumnInfo(name = "User_ID")
     private long userId;
 
-    public Order(long cityId, long timeSlotId, long userId) {
+    public Order(long cityId, long addressId, long timeSlotId, long userId) {
         this.orderDate = new Date();
         this.cityId = cityId;
+        this.addressId = addressId;
         this.timeSlotId = timeSlotId;
         this.userId = userId;
     }
@@ -86,6 +96,10 @@ public class Order {
     public long getCityId() {
         return cityId;
     }
+
+    public long getAddressId() { return addressId; }
+
+    public void setAddressId(long addressId) { this.addressId = addressId; }
 
     public long getTimeSlotId() {
         return timeSlotId;

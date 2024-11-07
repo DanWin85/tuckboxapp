@@ -458,11 +458,90 @@ public class AppDataModel {
         }
     }
 
+    public List<OrderItem> getOrderItemsSync(long orderId) {
+        try {
+            return orderItemDao.getOrderItemsSync(orderId);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error getting order items for order: " + orderId, e);
+            return null;
+        }
+    }
+
+    public void deleteOrderItemSync(OrderItem item) {
+        try {
+            orderItemDao.deleteOrderItemSync(item);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting order item: " + item.getOrderItemId(), e);
+            throw e;
+        }
+    }
+
+    public void deleteOrderSync(Order order) {
+        try {
+            orderDao.deleteOrderSync(order);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting order: " + order.getOrderId(), e);
+            throw e;
+        }
+    }
+
+    public Order getOrderByIdSync(long orderId) {
+        try {
+            return orderDao.getOrderByIdSync(orderId);
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error getting order by id: " + orderId, e);
+            return null;
+        }
+    }
+
+    public boolean deleteOrderAndItems(long orderId) {
+        try {
+            database.beginTransaction();
+
+            // First delete order items
+            int itemsDeleted = orderItemDao.deleteOrderItems(orderId);
+            Log.d("AppDataModel", "Deleted " + itemsDeleted + " items for order: " + orderId);
+
+            // Then delete the order
+            int orderDeleted = orderDao.deleteOrderById(orderId);
+            Log.d("AppDataModel", "Order deletion result: " + orderDeleted + " for order: " + orderId);
+
+            database.setTransactionSuccessful();
+            return orderDeleted > 0;
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting order and items", e);
+            return false;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    public boolean deleteAllUserOrdersAndItems(long userId) {
+        try {
+            database.beginTransaction();
+
+            List<Order> orders = getAllOrdersForUserSync(userId);
+            if (orders != null && !orders.isEmpty()) {
+                for (Order order : orders) {
+                    deleteOrderAndItems(order.getOrderId());
+                }
+            }
+
+            database.setTransactionSuccessful();
+            return true;
+        } catch (Exception e) {
+            Log.e("AppDataModel", "Error deleting user orders and items", e);
+            return false;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    public DeliveryAddress getDeliveryAddressById(long addressId) {
+        return deliveryAddressDao.getDeliveryAddressById(addressId);
+    }
+
     public FoodExtraDetails getFoodExtraDetailsById(long extraId) {
         return foodExtraDetailsDao.getFoodExtraDetailsById(extraId);
     }
-
-
-
-
 }
