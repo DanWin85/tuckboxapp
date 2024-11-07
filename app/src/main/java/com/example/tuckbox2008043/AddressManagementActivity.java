@@ -43,7 +43,7 @@ public class AddressManagementActivity extends MainMenuBarBaseActivity {
         initializeViews();
         setupRecyclerView();
         observeAddresses();
-        isHome = false;
+     //   isHome = false;
     }
     private void initializeViews() {
         recyclerView = findViewById(R.id.rvAddresses);

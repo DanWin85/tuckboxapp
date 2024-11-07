@@ -56,7 +56,7 @@ public class MealSelectionActivity extends MainMenuBarBaseActivity implements Me
         initializeViews();
         setupMealsList();
         setupNextButton();
-        isHome = false;
+       // isHome = false;
     }
     @Override
     public void onQuantityChanged(Food food, int quantity) {

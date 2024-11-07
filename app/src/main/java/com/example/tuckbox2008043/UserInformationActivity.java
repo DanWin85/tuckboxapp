@@ -34,7 +34,7 @@ public class UserInformationActivity extends MainMenuBarBaseActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_user_information);
         viewModel = new AppViewModel(getApplication());
-        isHome = false;
+//        isHome = false;
         initializeViews();
         setupListeners();
         loadUserData();

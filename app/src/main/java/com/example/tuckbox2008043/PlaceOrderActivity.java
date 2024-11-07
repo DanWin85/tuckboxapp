@@ -64,7 +64,7 @@ public class PlaceOrderActivity extends MainMenuBarBaseActivity {
         setupNextButton();
 
         Log.d(TAG, "onCreate completed");
-        isHome = false;
+        //isHome = false;
     }
 
     private void initializeViews() {
